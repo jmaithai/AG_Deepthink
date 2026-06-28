@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dreadnought Command Bridge</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Plotly -->
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js" charset="utf-8"></script>
+</head>
+<body>
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+        <h2 id="loadingText">INITIALIZING MANIFOLD...</h2>
+    </div>
+
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <h1 class="logo">DREADNOUGHT</h1>
+            <div class="panel">
+                <h3>🛡️ Vital Signs</h3>
+                <div class="metric">
+                    <span class="label">Volcano Gate (Φ)</span>
+                    <span class="value" id="phi_val">0.0000</span>
+                </div>
+                <div class="metric">
+                    <span class="label">Entropy (S)</span>
+                    <span class="value" id="entropy_val">0.0000</span>
+                </div>
+                <div class="metric">
+                    <span class="label">Active Nodes</span>
+                    <span class="value" id="nodes_val">0</span>
+                </div>
+                <button id="refreshBtn" class="btn secondary" style="margin-top: 15px;">FORCE SNAPSHOT REFRESH</button>
+            </div>
+            
+            <div class="panel">
+                <h3>⚙️ Execution Mode</h3>
+                <label class="toggle">
+                    <input type="checkbox" id="liveToggle">
+                    <span class="slider"></span>
+                </label>
+                <span id="modeLabel" class="mode-label safe">PAPER TRADE (DRY RUN)</span>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="equity-box">
+                    <span class="label">Account Equity</span>
+                    <span class="value" id="equity_val">$0.00</span>
+                </div>
+                <button id="executeBtn" class="btn primary">🚀 EXECUTE ACTION TENSOR</button>
+            </header>
+
+            <div class="content-grid">
+                <!-- Action Tensor Table -->
+                <div class="panel table-panel">
+                    <h3>🎯 Active Inference Tensor (Top 10)</h3>
+                    <table id="actionTable">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>U_risk</th>
+                                <th>Abs_U</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 3D Chart -->
+                <div class="panel chart-panel">
+                    <h3>🌐 Manifold Geometry (P-Space)</h3>
+                    <div id="manifoldChart" style="width: 100%; height: 400px;"></div>
+                </div>
+            </div>
+
+            <!-- Execution Manifest (Hidden initially) -->
+            <div id="manifestSection" class="panel table-panel hidden" style="margin-top: 20px;">
+                <h3>📋 Execution Manifest</h3>
+                <table id="manifestTable">
+                    <thead>
+                        <tr>
+                            <th>SYMBOL</th>
+                            <th>ACTION</th>
+                            <th>CONVICTION</th>
+                            <th>ATR</th>
+                            <th>RISK ($)</th>
+                            <th>LOTS</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+                <div class="total-risk">
+                    Total Projected Risk (2.5 ATR Stop): <span id="totalRiskVal">$0.00</span>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>

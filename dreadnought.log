@@ -1,0 +1,126 @@
+2026-06-27 17:53:03,984 - [DAEMON] - ============================================================
+2026-06-27 17:53:03,984 - [DAEMON] - [17:53:03] DREADNOUGHT DAEMON ONLINE
+2026-06-27 17:53:03,984 - [DAEMON] - [*] MODE: PAPER TRADE (DRY_RUN=True)
+2026-06-27 17:53:03,984 - [DAEMON] - ============================================================
+2026-06-27 17:53:03,996 - [DAEMON] - [17:53:03] Initiating Manifold Scan...
+2026-06-27 17:53:06,896 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $11.15
+2026-06-27 17:53:06,896 - [DAEMON] - [17:53:06] Heartbeat Complete. Sleeping for 57.1s.
+2026-06-27 17:54:03,997 - [DAEMON] - [17:54:03] Initiating Manifold Scan...
+2026-06-27 17:54:06,078 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $13.94
+2026-06-27 17:54:06,078 - [DAEMON] - [17:54:06] Heartbeat Complete. Sleeping for 57.9s.
+2026-06-27 17:55:03,997 - [DAEMON] - [17:55:03] Initiating Manifold Scan...
+2026-06-27 17:55:05,931 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $12.78
+2026-06-27 17:55:05,931 - [DAEMON] - [17:55:05] Heartbeat Complete. Sleeping for 58.1s.
+2026-06-27 17:56:03,999 - [DAEMON] - [17:56:03] Initiating Manifold Scan...
+2026-06-27 17:56:05,804 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $8.96
+2026-06-27 17:56:05,804 - [DAEMON] - [17:56:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 17:57:04,000 - [DAEMON] - [17:57:04] Initiating Manifold Scan...
+2026-06-27 17:57:05,790 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $13.17
+2026-06-27 17:57:05,791 - [DAEMON] - [17:57:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 17:58:04,001 - [DAEMON] - [17:58:04] Initiating Manifold Scan...
+2026-06-27 17:58:05,806 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $8.58
+2026-06-27 17:58:05,806 - [DAEMON] - [17:58:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 17:59:04,001 - [DAEMON] - [17:59:04] Initiating Manifold Scan...
+2026-06-27 17:59:05,800 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $14.07
+2026-06-27 17:59:05,800 - [DAEMON] - [17:59:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 18:00:04,002 - [DAEMON] - [18:00:04] Initiating Manifold Scan...
+2026-06-27 18:00:05,791 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $13.94
+2026-06-27 18:00:05,791 - [DAEMON] - [18:00:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 18:01:04,003 - [DAEMON] - [18:01:04] Initiating Manifold Scan...
+2026-06-27 18:01:05,803 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $10.32
+2026-06-27 18:01:05,803 - [DAEMON] - [18:01:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 18:02:04,004 - [DAEMON] - [18:02:04] Initiating Manifold Scan...
+2026-06-27 18:02:05,825 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $12.78
+2026-06-27 18:02:05,825 - [DAEMON] - [18:02:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 18:03:04,004 - [DAEMON] - [18:03:04] Initiating Manifold Scan...
+2026-06-27 18:03:05,795 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $7.91
+2026-06-27 18:03:05,795 - [DAEMON] - [18:03:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 18:04:04,006 - [DAEMON] - [18:04:04] Initiating Manifold Scan...
+2026-06-27 18:04:05,794 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $9.13
+2026-06-27 18:04:05,794 - [DAEMON] - [18:04:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 18:05:04,007 - [DAEMON] - [18:05:04] Initiating Manifold Scan...
+2026-06-27 18:05:05,806 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $9.40
+2026-06-27 18:05:05,806 - [DAEMON] - [18:05:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 18:06:04,007 - [DAEMON] - [18:06:04] Initiating Manifold Scan...
+2026-06-27 18:06:05,795 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $9.65
+2026-06-27 18:06:05,796 - [DAEMON] - [18:06:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 18:07:04,008 - [DAEMON] - [18:07:04] Initiating Manifold Scan...
+2026-06-27 18:07:05,806 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $7.08
+2026-06-27 18:07:05,806 - [DAEMON] - [18:07:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 18:08:04,010 - [DAEMON] - [18:08:04] Initiating Manifold Scan...
+2026-06-27 18:08:05,782 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $13.34
+2026-06-27 18:08:05,782 - [DAEMON] - [18:08:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 18:09:04,010 - [DAEMON] - [18:09:04] Initiating Manifold Scan...
+2026-06-27 18:09:05,802 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $11.81
+2026-06-27 18:09:05,803 - [DAEMON] - [18:09:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 18:10:04,011 - [DAEMON] - [18:10:04] Initiating Manifold Scan...
+2026-06-27 18:10:05,798 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $5.53
+2026-06-27 18:10:05,798 - [DAEMON] - [18:10:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 18:11:04,012 - [DAEMON] - [18:11:04] Initiating Manifold Scan...
+2026-06-27 18:11:05,801 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $9.84
+2026-06-27 18:11:05,801 - [DAEMON] - [18:11:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 18:12:04,013 - [DAEMON] - [18:12:04] Initiating Manifold Scan...
+2026-06-27 18:12:05,806 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $14.60
+2026-06-27 18:12:05,806 - [DAEMON] - [18:12:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 18:13:04,013 - [DAEMON] - [18:13:04] Initiating Manifold Scan...
+2026-06-27 18:13:05,840 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $6.53
+2026-06-27 18:13:05,840 - [DAEMON] - [18:13:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 18:14:04,014 - [DAEMON] - [18:14:04] Initiating Manifold Scan...
+2026-06-27 18:14:05,838 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $13.36
+2026-06-27 18:14:05,838 - [DAEMON] - [18:14:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 18:15:04,014 - [DAEMON] - [18:15:04] Initiating Manifold Scan...
+2026-06-27 18:15:05,831 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $10.62
+2026-06-27 18:15:05,831 - [DAEMON] - [18:15:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 18:16:04,016 - [DAEMON] - [18:16:04] Initiating Manifold Scan...
+2026-06-27 18:16:05,835 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $11.24
+2026-06-27 18:16:05,835 - [DAEMON] - [18:16:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 18:17:04,017 - [DAEMON] - [18:17:04] Initiating Manifold Scan...
+2026-06-27 18:17:05,823 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $9.35
+2026-06-27 18:17:05,823 - [DAEMON] - [18:17:05] Heartbeat Complete. Sleeping for 58.2s.
+2026-06-27 18:18:04,017 - [DAEMON] - [18:18:04] Initiating Manifold Scan...
+2026-06-27 18:18:05,881 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $12.47
+2026-06-27 18:18:05,881 - [DAEMON] - [18:18:05] Heartbeat Complete. Sleeping for 58.1s.
+2026-06-27 18:19:04,018 - [DAEMON] - [18:19:04] Initiating Manifold Scan...
+2026-06-27 18:19:05,910 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $10.81
+2026-06-27 18:19:05,910 - [DAEMON] - [18:19:05] Heartbeat Complete. Sleeping for 58.1s.
+2026-06-27 18:20:04,019 - [DAEMON] - [18:20:04] Initiating Manifold Scan...
+2026-06-27 18:20:05,956 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $8.95
+2026-06-27 18:20:05,956 - [DAEMON] - [18:20:05] Heartbeat Complete. Sleeping for 58.1s.
+2026-06-27 18:21:04,019 - [DAEMON] - [18:21:04] Initiating Manifold Scan...
+2026-06-27 18:21:05,897 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $12.14
+2026-06-27 18:21:05,897 - [DAEMON] - [18:21:05] Heartbeat Complete. Sleeping for 58.1s.
+2026-06-27 18:22:04,020 - [DAEMON] - [18:22:04] Initiating Manifold Scan...
+2026-06-27 18:22:06,004 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $10.57
+2026-06-27 18:22:06,004 - [DAEMON] - [18:22:06] Heartbeat Complete. Sleeping for 58.0s.
+2026-06-27 18:23:04,021 - [DAEMON] - [18:23:04] Initiating Manifold Scan...
+2026-06-27 18:23:05,947 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $8.65
+2026-06-27 18:23:05,947 - [DAEMON] - [18:23:05] Heartbeat Complete. Sleeping for 58.1s.
+2026-06-27 18:24:04,021 - [DAEMON] - [18:24:04] Initiating Manifold Scan...
+2026-06-27 18:24:06,051 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $10.85
+2026-06-27 18:24:06,051 - [DAEMON] - [18:24:06] Heartbeat Complete. Sleeping for 58.0s.
+2026-06-27 18:25:04,022 - [DAEMON] - [18:25:04] Initiating Manifold Scan...
+2026-06-27 18:25:06,011 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $10.96
+2026-06-27 18:25:06,011 - [DAEMON] - [18:25:06] Heartbeat Complete. Sleeping for 58.0s.
+2026-06-27 18:26:04,023 - [DAEMON] - [18:26:04] Initiating Manifold Scan...
+2026-06-27 18:26:05,901 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $10.93
+2026-06-27 18:26:05,901 - [DAEMON] - [18:26:05] Heartbeat Complete. Sleeping for 58.1s.
+2026-06-27 18:26:55,738 - [DAEMON] - [SYSTEM] Daemon Shutdown requested via KeyboardInterrupt.
+2026-06-27 18:26:55,738 - [DAEMON] - [SYSTEM] MT5 connection safely closed. Daemon offline.
+2026-06-27 18:27:54,135 - [DAEMON] - ============================================================
+2026-06-27 18:27:54,135 - [DAEMON] - [18:27:54] DREADNOUGHT DAEMON ONLINE
+2026-06-27 18:27:54,135 - [DAEMON] - [*] MODE: PAPER TRADE (DRY_RUN=True)
+2026-06-27 18:27:54,135 - [DAEMON] - ============================================================
+2026-06-27 18:27:54,148 - [DAEMON] - [18:27:54] Initiating Manifold Scan...
+2026-06-27 18:27:57,072 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $12.47
+2026-06-27 18:27:57,072 - [DAEMON] - [18:27:57] Heartbeat Complete. Sleeping for 57.1s.
+2026-06-27 18:28:54,148 - [DAEMON] - [18:28:54] Initiating Manifold Scan...
+2026-06-27 18:28:56,129 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $10.36
+2026-06-27 18:28:56,129 - [DAEMON] - [18:28:56] Heartbeat Complete. Sleeping for 58.0s.
+2026-06-27 18:29:54,148 - [DAEMON] - [18:29:54] Initiating Manifold Scan...
+2026-06-27 18:29:56,086 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $8.98
+2026-06-27 18:29:56,086 - [DAEMON] - [18:29:56] Heartbeat Complete. Sleeping for 58.1s.
+2026-06-27 18:30:54,148 - [DAEMON] - [18:30:54] Initiating Manifold Scan...
+2026-06-27 18:30:56,030 - [DAEMON] - [*] Action Tensor Executed. Total Projected Risk: $11.95
+2026-06-27 18:30:56,030 - [DAEMON] - [18:30:56] Heartbeat Complete. Sleeping for 58.1s.
+2026-06-27 18:31:28,470 - [DAEMON] - [SYSTEM] Daemon Shutdown requested via KeyboardInterrupt.
+2026-06-27 18:31:28,470 - [DAEMON] - [SYSTEM] MT5 connection safely closed. Daemon offline.

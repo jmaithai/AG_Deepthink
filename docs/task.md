@@ -1,0 +1,7 @@
+- `[/]` Update `wkb_tunneling_engine.py` script
+  - `[ ]` Delete all moving average lagging indicators
+  - `[ ]` Call `solve_graph_wave_diffusion` to get Instantaneous Wave Energy Flux
+  - `[ ]` Calculate $F_{strand}$ and implement Asymmetric Potential Barrier
+- `[ ]` Run historical backtest over the 4587 $\tau$ bars
+- `[ ]` Verify that the 5 catastrophic drawdowns are mathematically bypassed
+- `[ ]` Summarize results in Walkthrough artifact
