@@ -3,139 +3,141 @@ import numpy as np
 import os
 import warnings
 
-warnings.simplefilter(action='ignore')
+warnings.filterwarnings('ignore')
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-def run_aion_observatory():
+def run_observatory():
     file_path = "archive/fractal_manifold_6M.parquet"
-    print(f"[*] AION OBSERVATORY: Loading Raw Sensorium from {file_path}")
+    print(f"[*] AION OBSERVATORY: Ingesting Fractal Energy Field from {file_path}")
     
     try:
         df = pd.read_parquet(file_path)
     except Exception as e:
-        print(f"[!] Error: {e}")
+        print(f"[!] Critical Error: Data missing. {e}")
         return
         
-    # ---------------------------------------------------------
-    # 1. THE SENSORIUM (Event-Based Clock)
-    # ---------------------------------------------------------
-    print("[*] Eradicating Chronological Time...")
-    # We use M1 tick volume as a proxy for physical network transactions
+    print("[*] SENSORIUM: Eradicating Chronological Time...")
     vol_cols = [c for c in df.columns if c.endswith('_M1_vol')]
     df['network_ticks'] = df[vol_cols].sum(axis=1)
     df['cumulative_ticks'] = df['network_ticks'].cumsum()
     
-    # Event clock ticks every 25,000 physical network transactions
-    EVENT_THRESHOLD = 25000 
+    # Event clock ticks based on global network density
+    EVENT_THRESHOLD = int(df['network_ticks'].mean() * 1000) 
     df['Event_Clock'] = (df['cumulative_ticks'] // EVENT_THRESHOLD).astype(int)
     
-    close_cols = [c for c in df.columns if c.endswith('_M1_close')]
-    symbols = [c.replace('_M1_close', '') for c in close_cols]
+    symbols = [c.replace('_M1_price', '') for c in df.columns if c.endswith('_M1_price')]
     
+    # Preserve chronological time for the Living Thesis output
     df['chronological_time'] = df.index
     sensorium = df.groupby('Event_Clock').last()
-    print(f"[+] Compressed {len(df):,} chronological minutes into {len(sensorium):,} Event Packets.")
     
-    # ---------------------------------------------------------
-    # 2. ACTION PHYSICS
-    # ---------------------------------------------------------
-    print("[*] Calculating Velocity, Acceleration, and Jerk...")
-    prices = np.log(sensorium[close_cols].values)
-    velocity = np.diff(prices, axis=0, prepend=prices[0:1])
-    acceleration = np.diff(velocity, axis=0, prepend=velocity[0:1])
-    jerk = np.diff(acceleration, axis=0, prepend=acceleration[0:1])
-    
-    sensorium['System_Jerk'] = np.linalg.norm(jerk, axis=1)
-    
-    # ---------------------------------------------------------
-    # 3. REALITY DEGENERACY & HIDDEN STATE INFERENCE
-    # ---------------------------------------------------------
-    print("[*] Performing Unsupervised Eigen-Decomposition (Listening to the Data)...")
-    
-    window = 21 # Rolling event window
-    degeneracy_records = []
-    
-    for i in range(window, len(sensorium)):
-        v_window = velocity[i-window:i]
-        
-        # Add microscopic noise to prevent singular matrices on dead/flat data
-        v_noisy = v_window + np.random.normal(0, 1e-12, v_window.shape)
-        cov_matrix = np.cov(v_noisy.T)
-        
-        # Extract Latent Forces (Eigen-Decomposition)
-        # This mathematically finds the hidden causes WITHOUT human labels
-        eigenvalues, eigenvectors = np.linalg.eigh(cov_matrix)
-        
-        # Sort by explanatory power (largest eigenvalue first)
-        idx = np.argsort(eigenvalues)[::-1]
-        eigenvalues = eigenvalues[idx]
-        eigenvectors = eigenvectors[:, idx]
-        
-        total_energy = np.sum(eigenvalues) + 1e-12
-        p_energy = np.clip(eigenvalues / total_energy, 1e-12, 1.0)
-        
-        # Shannon Entropy (Reality Degeneracy)
-        # How many possible explanations are still alive?
-        S_degeneracy = -np.sum(p_energy * np.log2(p_energy))
-        
-        dom_vector = eigenvectors[:, 0]
-        dom_power = p_energy[0]
-        
-        degeneracy_records.append({
-            'Event_State': i,
-            'Chronological_Time': sensorium['chronological_time'].iloc[i],
-            'System_Jerk': sensorium['System_Jerk'].iloc[i],
-            'Reality_Degeneracy': S_degeneracy,
-            'Dominant_Power': dom_power,
-            'Dominant_Vector': dom_vector
-        })
-        
-    results = pd.DataFrame(degeneracy_records)
-    
-    # Phase Transitions = Rapid Drop in Degeneracy (Wave-Function Collapse)
-    results['Degeneracy_Drop'] = results['Reality_Degeneracy'].diff().fillna(0)
-    
-    print("\n[*] Scanning for Structural Ruptures (Wave-Function Collapses)...")
-    
-    # We look for the most violent drops in degeneracy (entropy falling)
-    # where the market suddenly aligned into a single explanation
-    collapses = results[results['Degeneracy_Drop'] < -0.15].sort_values(by='Degeneracy_Drop')
-    
-    # Filter closely grouped events to isolate distinct days
-    collapses['Day'] = collapses['Chronological_Time'].dt.floor('D')
-    top_collapses = collapses.drop_duplicates(subset=['Day']).head(5)
-    
-    print("\n" + "="*100)
-    print("AION OBSERVATORY: TOP 5 WAVE-FUNCTION COLLAPSES (REALITY COMPRESSION)")
-    print("="*100)
-    
-    for rank, (_, event) in enumerate(top_collapses.iterrows(), 1):
-        ts = event['Chronological_Time'].strftime('%Y-%m-%d %H:%M:%S')
-        deg = event['Reality_Degeneracy']
-        drop = event['Degeneracy_Drop']
-        jrk = event['System_Jerk']
-        power = event['Dominant_Power'] * 100
-        
-        print(f"\n[ PHASE TRANSITION {rank} | CHRONO TIME: {ts} ]")
-        print(f"Action Physics:     High Structural Jerk detected ({jrk:.6f})")
-        print(f"Reality Degeneracy: Collapsed by {abs(drop):.4f} bits (Current Entropy: {deg:.4f})")
-        print(f"Hidden Cause:       A single dominant explanation now commands {power:.2f}% of the manifold.")
-        
-        # Decode the DOMINANT REALITY
-        vec = event['Dominant_Vector']
-        loadings = {symbols[j]: vec[j] for j in range(len(symbols))}
-        sorted_loadings = sorted(loadings.items(), key=lambda item: abs(item[1]), reverse=True)
-        
-        print(f"\n  [ PROPAGATION & TRAP MAP ]")
-        print(f"  Epicenters (Origin):  [{sorted_loadings[0][0]:<6}] (Weight: {sorted_loadings[0][1]:+.4f}) | [{sorted_loadings[1][0]:<6}] (Weight: {sorted_loadings[1][1]:+.4f})")
-        print(f"  Wavefront Receivers:  [{sorted_loadings[2][0]:<6}] (Weight: {sorted_loadings[2][1]:+.4f}) | [{sorted_loadings[3][0]:<6}] (Weight: {sorted_loadings[3][1]:+.4f})")
-        
-        lag_1, lag_2 = sorted_loadings[-1], sorted_loadings[-2]
-        print(f"  Dead Zones / Traps:   [{lag_1[0]:<6}] (Weight: {lag_1[1]:+.4f}) | [{lag_2[0]:<6}] (Weight: {lag_2[1]:+.4f})")
-        print(f"  AION Arbiter:         Pressure propagates from Epicenters. Weakest exit is forced through Dead Zones.")
+    print(f"[*] Compressed into {len(sensorium):,} True Phase States.")
 
-    print("\n" + "="*100)
-    print("AION Doctrine Applied. Zero human assumptions. The data defined its own geometry.")
+    print("[*] FIELD CONSTRUCTION: Calculating Macro/Meso/Micro Kinematics...")
+    
+    p_h1 = sensorium[[f"{sym}_H1_price" for sym in symbols]].values
+    p_m15 = sensorium[[f"{sym}_M15_price" for sym in symbols]].values
+    p_m1 = sensorium[[f"{sym}_M1_price" for sym in symbols]].values
+    
+    # Velocities across the fractals
+    v_h1 = np.diff(p_h1, axis=0, prepend=p_h1[0:1])
+    v_m15 = np.diff(p_m15, axis=0, prepend=p_m15[0:1])
+    v_m1 = np.diff(p_m1, axis=0, prepend=p_m1[0:1])
+    
+    print("[*] REALITY COMPRESSION: Inferring Hidden States & Degeneracy...")
+    window = 21
+    entropies = np.zeros(len(sensorium))
+    
+    # We use M15 (Meso) to define Reality Degeneracy, as it captures the propagating wave best
+    for i in range(len(sensorium)):
+        if i < window:
+            entropies[i] = np.nan
+            continue
+            
+        v_window = v_m15[i-window:i]
+        
+        mean_v = np.mean(v_window, axis=0)
+        std_v = np.std(v_window, axis=0) + 1e-12
+        v_norm = (v_window - mean_v) / std_v
+        
+        cov_matrix = np.cov(v_norm.T)
+        eig_vals, _ = np.linalg.eigh(cov_matrix)
+        
+        p_energy = np.clip(eig_vals / (np.sum(eig_vals) + 1e-12), 1e-12, 1.0)
+        entropy = -np.sum(p_energy * np.log2(p_energy))
+        entropies[i] = entropy
+        
+    sensorium['Entropy'] = entropies
+    sensorium['Entropy_Change'] = sensorium['Entropy'].diff()
+    
+    print("[*] TRAP DETECTION: Locating Forced Asymmetry...")
+    
+    # Find the single most violent reality compression (Wave-Function Collapse)
+    valid_states = sensorium.dropna(subset=['Entropy_Change'])
+    collapse_idx = valid_states['Entropy_Change'].idxmin()
+    
+    # Locate the exact index mathematically
+    i = sensorium.index.get_loc(collapse_idx)
+    
+    # Extract the dominant vector at the exact moment of collapse
+    v_window = v_m15[i-window:i]
+    mean_v = np.mean(v_window, axis=0)
+    std_v = np.std(v_window, axis=0) + 1e-12
+    v_norm = (v_window - mean_v) / std_v
+    
+    cov_matrix = np.cov(v_norm.T)
+    eig_vals, eig_vecs = np.linalg.eigh(cov_matrix)
+    idx = np.argsort(eig_vals)[::-1]
+    
+    dom_force = eig_vecs[:, idx[0]]
+    power = (eig_vals[idx[0]] / np.sum(eig_vals)) * 100
+    
+    # THE TRAP LOGIC
+    # Expected movement based on the Dominant Meso Force
+    force_magnitude = np.dot((v_m15[i] - mean_v) / std_v, dom_force)
+    expected_v = force_magnitude * dom_force
+    
+    # Actual Micro (M1) movement
+    actual_v_m1 = (v_m1[i] - np.mean(v_m1[i-window:i], axis=0)) / (np.std(v_m1[i-window:i], axis=0) + 1e-12)
+    
+    # The Trap: Expected to move strongly, but M1 velocity is resisting or dead.
+    trap_score = np.abs(expected_v) - np.abs(actual_v_m1)
+    
+    # We only care about nodes that ARE part of the dominant wave (high expected_v)
+    trap_score = np.where(np.abs(expected_v) > np.percentile(np.abs(expected_v), 70), trap_score, -np.inf)
+    
+    trap_idx = np.argmax(trap_score)
+    prop_idx = np.argmax(np.abs(expected_v)) # The Epicenter / Origin
+    
+    trap_sym = symbols[trap_idx]
+    prop_sym = symbols[prop_idx]
+    
+    ts = sensorium['chronological_time'].iloc[i].strftime('%Y-%m-%d %H:%M:%S')
+    
+    print("\n" + "="*80)
+    print("AION OBSERVATORY: LIVING THESIS")
+    print("="*80)
+    print(f"EVENT STATE: {collapse_idx} | T=0: {ts}")
+    
+    print("\n[ WHAT IS THE MARKET DOING? ]")
+    print(f"Current Phase State: FRACTURE & COMPRESSION.")
+    print(f"Reality Degeneracy collapsed violently by {abs(sensorium['Entropy_Change'].iloc[i]):.4f} bits.")
+    
+    print("\n[ WHY IS IT DOING IT? ]")
+    print(f"Hidden Cause Hypothesis: A singular structural force commands {power:.1f}% of the manifold's energy.")
+    print(f"Propagation: The pressure wave originates and is anchored by [{prop_sym}].")
+    
+    print("\n[ HOW DO WE GAIN FROM IT? ]")
+    print(f"Trap Detected: [{trap_sym}] is mathematically compelled by the Meso wave (Eigen-Weight: {np.abs(dom_force[trap_idx]):.4f}).")
+    print(f"Physics: The Meso field demands [{trap_sym}] move with trajectory {expected_v[trap_idx]:+.2f}.")
+    print(f"         But local Micro (M1) participants are stubbornly holding it at {actual_v_m1[trap_idx]:+.2f}.")
+    print(f"         Participants fighting the wave on the micro scale are fundamentally trapped.")
+    
+    print("\n[ ACTION PHYSICS ARBITER ]")
+    direction = "LONG (BUY)" if expected_v[trap_idx] > 0 else "SHORT (SELL)"
+    print(f"Weakest Outlet: The forced micro-liquidation of [{trap_sym}] participants.")
+    print(f"Action: Execute asymmetric route -> {direction} [{trap_sym}] on the structural snap.")
+    print("="*80)
 
 if __name__ == "__main__":
-    run_aion_observatory()
+    run_observatory()

@@ -1,0 +1,10 @@
+# Data files
+*.csv
+*.parquet
+*.pkl
+*.db
+*.npz
+
+# Python
+__pycache__/
+*.pyc

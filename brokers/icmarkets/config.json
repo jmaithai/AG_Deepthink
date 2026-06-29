@@ -1,0 +1,8 @@
+{
+    "BROKER_NAME": "ICMarkets",
+    "TERMINAL_PATH": "E:\\ICmarkets_mt5\\terminal64.exe",
+    "MAX_FARM_MASS": 50,
+    "MAX_DRAWDOWN": 15.0,
+    "DRY_RUN": false,
+    "SHARPE_THRESHOLD": 2.58081
+}

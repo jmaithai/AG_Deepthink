@@ -6,8 +6,8 @@ import physics_engine as pe
 import os
 
 def fetch_fractal_manifold():
-    print("[*] Initializing MT5 for Fractal Extraction...")
-    if not mt5.initialize():
+    print("[*] Initializing MT5 for Fractal Energy Extraction...")
+    if not mt5.initialize(path="E:\\Blackbull\\terminal64.exe"):
         print("[-] MT5 Init Failed.")
         return
 
@@ -26,7 +26,6 @@ def fetch_fractal_manifold():
     }
 
     df_list = []
-    missing = []
     
     for tf_name, tf_val in timeframes.items():
         print(f"\n[*] Fetching Frequency: {tf_name}")
@@ -36,7 +35,6 @@ def fetch_fractal_manifold():
             
             if rates is None or len(rates) == 0:
                 print(f" [!] Missing {tf_name} data for {sym}. Please cache it in MT5.")
-                missing.append(f"{sym} ({tf_name})")
                 continue
                 
             df = pd.DataFrame(rates)
@@ -46,21 +44,13 @@ def fetch_fractal_manifold():
             temp_df = pd.DataFrame(index=df.index)
             # Log price for Gauge Inversion (The Physics)
             temp_df[f"{sym}_{tf_name}_price"] = np.log(df['close'])
-            # Volume for Mass Calculation
+            # Volume for Dynamic Mass Calculation
             temp_df[f"{sym}_{tf_name}_vol"] = df['tick_volume']
-            # Raw price for TRUE, unleveraged PnL tracking
-            temp_df[f"{sym}_{tf_name}_close"] = df['close']
             
             df_list.append(temp_df)
             print(f" [+] {sym} ({tf_name}): {len(df)} bars retrieved.")
 
     mt5.shutdown()
-
-    if missing:
-        print(f"\n[!] {len(missing)} missing datasets:")
-        for m in missing:
-            print(f"    -> {m}")
-        print("[!] Open these charts in MT5 and hold 'Page Up', then re-run.")
 
     if not df_list:
         print("[-] Fatal: No data retrieved.")
@@ -77,7 +67,7 @@ def fetch_fractal_manifold():
     filename = "archive/fractal_manifold_6M.parquet"
     master_df.to_parquet(filename)
     print(f"\n[SUCCESS] Fractal Manifold saved: {filename}")
-    print(f"[*] Tensor Shape: {master_df.shape[0]} rows x {master_df.shape[1]} columns")
+    print(f"[*] Tensor Shape: {master_df.shape}")
 
 if __name__ == "__main__":
     fetch_fractal_manifold()

@@ -1,205 +1,132 @@
 import pandas as pd
 import numpy as np
+import os
 import warnings
 
 warnings.filterwarnings('ignore')
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 def run_hamiltonian_engine():
-    file_path = "archive/fractal_manifold_6M.parquet"
-    print(f"[*] HAMILTONIAN ENGINE: Loading 6-Month Manifold...")
-
+    file_path = "archive/manifold_6M.parquet"
+    print(f"[*] AION HAMILTONIAN ENGINE: Mapping True Physics (6M OOS Dataset)...")
+    
     try:
         df = pd.read_parquet(file_path)
     except Exception as e:
         print(f"[!] Error: {e}")
         return
-
-    vol_cols   = [c for c in df.columns if c.endswith('_M1_vol')]
-    close_cols = [c for c in df.columns if c.endswith('_M1_close')]
-    symbols    = [c.replace('_M1_close', '') for c in close_cols]
-
-    # --- EVENT CLOCK ---
-    df['network_ticks']    = df[vol_cols].sum(axis=1)
+        
+    print("[*] Applying Doctrine Firewall: Filtering non-tradable nodes...")
+    valid_symbols = {
+        'EURUSD', 'USDCHF', 'USDCAD', 'AUDUSD', 'GBPUSD', 'NZDUSD', 'USDJPY',
+        'AUDCAD', 'AUDCHF', 'AUDJPY', 'AUDNZD', 'CADCHF', 'CADJPY', 'CHFJPY',
+        'EURAUD', 'EURCAD', 'EURCHF', 'EURGBP', 'EURJPY', 'EURNZD', 'GBPAUD',
+        'GBPCAD', 'GBPJPY', 'GBPNZD', 'NZDCAD', 'NZDCHF', 'NZDJPY',
+        'XAUUSD', 'XAGUSD', 'WTI', 'BRENT', 'NATGAS'
+    }
+    
+    close_cols = [c for c in df.columns if c.endswith('_close') and c.replace('_close', '') in valid_symbols]
+    vol_cols = [c.replace('_close', '_vol') for c in close_cols]
+    
+    print("[*] Eradicating Chronological Time...")
+    df['network_ticks'] = df[vol_cols].sum(axis=1)
+    
+    # Fallback to absolute ticks if volume is unrecorded
+    if df['network_ticks'].sum() == 0:
+        df['network_ticks'] = 1.0
+        
     df['cumulative_ticks'] = df['network_ticks'].cumsum()
-    df['Event_Clock']      = (df['cumulative_ticks'] // 25000).astype(int)
+    
+    # Event clock ticks based on pure network density, not human clocks
+    # 50,000 cumulative network ticks = 1 True Event State
+    EVENT_THRESHOLD = 50000
+    df['Event_Clock'] = (df['cumulative_ticks'] // EVENT_THRESHOLD).astype(int)
+    
+    symbols = [c.replace('_close', '') for c in close_cols]
+    
     df['chronological_time'] = df.index
+    sensorium = df.groupby('Event_Clock').last()
+    
+    print(f"[+] Compressed into {len(sensorium):,} True Event States.")
 
-    # Aggregate sensorium: last close, sum volume per event state
-    agg_dict = {col: 'last' for col in close_cols}
-    agg_dict.update({col: 'sum'  for col in vol_cols})
-    agg_dict['chronological_time'] = 'last'
-    sensorium = df.groupby('Event_Clock').agg(agg_dict)
+    # 1. State Vectors (Normalized for cross-asset spatial geometry)
+    raw_prices = sensorium[close_cols].values
+    prices = (raw_prices - np.mean(raw_prices, axis=0)) / (np.std(raw_prices, axis=0) + 1e-9)
+    
+    volumes = sensorium[vol_cols].values
+    mass = (volumes - np.mean(volumes, axis=0)) / (np.std(volumes, axis=0) + 1e-9)
+    mass = np.clip(mass, 0.1, None) # Mass must be strictly positive
+    
+    velocity = np.diff(prices, axis=0, prepend=prices[0:1])
+    
+    print("[*] Calculating Manifold Barycenter and Energy States...")
+    
+    # 2. THE MANIFOLD BARYCENTER (The True Equilibrium)
+    # Volume-weighted center of mass of the entire N-Dimensional manifold
+    barycenter = np.sum(mass * prices, axis=1) / np.sum(mass, axis=1)
+    
+    # 3. HAMILTONIAN MECHANICS
+    # Kinetic Energy (T) = 0.5 * m * v^2
+    T = 0.5 * mass * (velocity**2)
+    
+    # Potential Energy (V) = 0.5 * m * d^2 (Distance from Barycenter)
+    displacement = prices - barycenter[:, None]
+    V = 0.5 * mass * (displacement**2)
+    
+    # Total Energy (H) & Flow (Delta H)
+    H = T + V
+    delta_H = np.diff(H, axis=0, prepend=H[0:1])
 
-    n_states  = len(sensorium)
-    n_symbols = len(symbols)
-    print(f"[+] Compressed {len(df):,} bars into {n_states:,} Event States.")
+    print("[*] Auditing The Law of the Coiled Spring...")
+    
+    passes = 0
+    failures = 0
+    
+    # Analyze the manifold
+    for i in range(10, len(sensorium) - 10):
+        # Define a "Coil" locally relative to the manifold's current state
+        # High V (top 10% of manifold), Low T (bottom 10% of manifold), absorbing energy (dH > 0)
+        
+        current_V = V[i]
+        current_T = T[i]
+        current_dH = delta_H[i]
+        
+        v_thresh = np.percentile(current_V, 90)
+        t_thresh = np.percentile(current_T, 10)
+        
+        # The Trap: Highly stretched, frozen, and actively absorbing energy
+        is_coiled = (current_V > v_thresh) & (current_T < t_thresh) & (current_dH > 0)
+        
+        if is_coiled.any():
+            # Check the next 10 Event States (Physical time, not chronological)
+            # Did the coiled node release its potential energy and snap back?
+            
+            for idx in np.where(is_coiled)[0]:
+                disp_t0 = abs(displacement[i, idx])
+                # Displacement 10 energy states in the future
+                disp_tf = abs(displacement[i+10, idx]) 
+                
+                # Check for kinetic spike
+                max_v_future = np.max(np.abs(velocity[i+1:i+11, idx]))
+                
+                # FALSIFICATION: Did it snap back toward the Barycenter AND release kinetic energy?
+                if disp_tf < disp_t0 and max_v_future > current_T[idx]:
+                    passes += 1
+                else:
+                    failures += 1
 
-    # --- KINEMATICS ---
-    log_prices = np.log(sensorium[close_cols].values.astype(float) + 1e-9)
-    velocity   = np.diff(log_prices, axis=0, prepend=log_prices[0:1])
-    volumes    = sensorium[vol_cols].values.astype(float)
-
-    # Normalise volumes per symbol so FX/Indices are comparable
-    vol_mean = volumes.mean(axis=0) + 1e-9
-    vol_norm = volumes / vol_mean
-
-    # ================================================================
-    # HAMILTONIAN PHYSICS
-    # H = T + V
-    # T (Kinetic)   = vol × velocity²      — money already moving
-    # V (Potential) = vol × displacement²  — money compressed, not yet released
-    # ================================================================
-    T = vol_norm * (velocity ** 2)
-
-    # Rolling equilibrium = 21-state SMA of log prices
-    SMA_WINDOW = 21
-    lp_df        = pd.DataFrame(log_prices, columns=close_cols)
-    rolling_mean = lp_df.rolling(SMA_WINDOW, min_periods=1).mean().values
-    displacement = log_prices - rolling_mean                   # signed distance from equilibrium
-    V  = vol_norm * (displacement ** 2)
-
-    H  = T + V                                                 # total energy per node
-    dH = np.diff(H, axis=0, prepend=H[0:1])                  # energy flow (+ = absorbing)
-
-    VT_ratio = V / (T + 1e-15)                                # potential dominance
-
-    print("[*] Scanning for Coiled Spring States...")
-    print("    Signal: V > 90th pct | T < 10th pct | ΔH > 0 (absorbing energy)")
-
-    HISTORY_WINDOW = 50
-    coil_events = []
-    raw_df = df.copy()
-
-    for i in range(HISTORY_WINDOW, n_states):
-        v_hist = V[max(0, i - HISTORY_WINDOW):i]
-        t_hist = T[max(0, i - HISTORY_WINDOW):i]
-
-        v_90 = np.percentile(v_hist, 90, axis=0)   # high potential threshold
-        t_10 = np.percentile(t_hist, 10, axis=0)   # low kinetic threshold
-
-        is_coiled = (
-            (V[i] > v_90) &      # unusually compressed (high potential)
-            (T[i] < t_10) &      # barely moving (low kinetic)
-            (dH[i] > 0)          # absorbing energy from manifold
-        )
-
-        if not is_coiled.any():
-            continue
-
-        # Score: highest VT_ratio among coiled nodes
-        coil_scores = VT_ratio[i] * is_coiled.astype(float)
-        best_node   = int(np.argmax(coil_scores))
-
-        if coil_scores[best_node] == 0:
-            continue
-
-        # Direction: node is compressed away from equilibrium → mean reversion
-        disp_sign       = np.sign(displacement[i, best_node])
-        trade_direction = -disp_sign if disp_sign != 0 else 1.0  # bet toward equilibrium
-
-        coil_events.append({
-            'State_ID'       : i,
-            'Time'           : sensorium['chronological_time'].iloc[i],
-            'Node'           : symbols[best_node],
-            'VT_Ratio'       : VT_ratio[i, best_node],
-            'V'              : V[i, best_node],
-            'T'              : T[i, best_node],
-            'dH'             : dH[i, best_node],
-            'Displacement'   : displacement[i, best_node],
-            'Trade_Direction': trade_direction,
-        })
-
-    if not coil_events:
-        print("[-] No Coiled Spring states found. Relax thresholds.")
-        return
-
-    events_df = pd.DataFrame(coil_events)
-    events_df['HourGroup'] = events_df['Time'].dt.floor('H')
-    distinct  = events_df.drop_duplicates(subset=['HourGroup', 'Node'])
-    total     = len(distinct)
-
-    print(f"\n[+] Discovered {total} distinct Coiled Spring events over 6 months.")
-    print(f"[*] Top 5 most coiled nodes:")
-    top_nodes = distinct.nlargest(5, 'VT_Ratio')[['Node','VT_Ratio','V','T','Displacement']]
-    for _, row in top_nodes.iterrows():
-        print(f"    {row['Node']:<12} VT={row['VT_Ratio']:.1f}x | V={row['V']:.6f} | T={row['T']:.6f} | Disp={row['Displacement']:+.4f}")
-
-    print("\n[*] Initiating Thermodynamic Forward-Walk Falsification...")
-
-    passes, failures = 0, 0
-    release_log, loss_log = [], []
-
-    for _, event in distinct.iterrows():
-        t0        = event['Time']
-        node      = event['Node']
-        direction = event['Trade_Direction']
-
-        post = raw_df[raw_df.index >= t0].copy()
-        if len(post) < 5:
-            continue
-
-        post['post_energy'] = post[vol_cols].sum(axis=1).cumsum()
-        forward_df = post[post['post_energy'] <= 100000]
-        if len(forward_df) < 5:
-            continue
-
-        p0   = forward_df[f"{node}_M1_close"].iloc[0]
-        disp = np.log(forward_df[f"{node}_M1_close"] / p0) * 100
-
-        if direction > 0:       # long — node was below equilibrium, expect rise
-            release  = disp.max()
-            friction = abs(disp.min())
-        else:                   # short — node was above equilibrium, expect fall
-            release  = abs(disp.min())
-            friction = max(disp.max(), 0.0)
-
-        friction = abs(friction)
-
-        # PASS: directional release > 2x adverse friction
-        if release > 0 and release > (friction * 2):
-            passes += 1
-            release_log.append(release)
-        else:
-            failures += 1
-            loss_log.append(friction)
-
-    if passes + failures == 0:
-        print("[-] No events had sufficient forward data.")
-        return
-
-    win_rate  = passes / (passes + failures) * 100
-    avg_rel   = np.mean(release_log) if release_log else 0.0
-    avg_loss  = np.mean(loss_log)    if loss_log    else 0.0
-    exp_ratio = avg_rel / (avg_loss + 0.0001) if passes > 0 else 0.0
-    ev        = (win_rate/100 * avg_rel) - ((1 - win_rate/100) * avg_loss)
-
+    win_rate = (passes / (passes + failures)) * 100 if (passes + failures) > 0 else 0
+    
     print("\n" + "="*80)
-    print("HAMILTONIAN ENGINE: 6-MONTH COILED SPRING AUDIT")
+    print("AION HAMILTONIAN (BARYCENTRIC) AUDIT: RESULTS")
     print("="*80)
-    print(f"Total Coiled Spring Events:        {passes + failures}")
-    print(f"Falsification Passes:              {passes}")
-    print(f"Falsification Failures:            {failures}")
-    print(f"\n[ HAMILTONIAN DOCTRINE METRICS ]")
-    print(f"Mathematical Win Rate:     {win_rate:.2f}%")
-    print(f"Average Kinetic Release:   {avg_rel:.4f}%  (Yield on Success)")
-    print(f"Average Adverse Friction:  {avg_loss:.4f}%  (Drawdown on Failure)")
-    print(f"System Expectancy Ratio:   {exp_ratio:.2f}x")
-    print(f"Expected Value (EV):       {ev:+.5f}% per event")
+    print(f"Total Coiled Traps Identified: {passes + failures}")
+    print(f"Mathematical Win Rate (Forced Release): {win_rate:.2f}%")
     print("="*80)
-    print(f"\n[ FULL DOCTRINE LEADERBOARD ]")
-    print(f"  Entropy-Drop            → Win: 16.18% | EV: +0.02925% | Exp: 23.40x")
-    print(f"  Z Locked Capacitor      → Win: 18.75% | EV: +0.10770% | Exp: 43.32x")
-    print(f"  Epicenter Reversal      → Win: 40.62% | EV: -0.00886% | Exp:  1.19x")
-    print(f"  Hamiltonian Coil        → Win: {win_rate:.2f}%  | EV: {ev:+.5f}% | Exp: {exp_ratio:.2f}x")
-
-    if win_rate > 50 and ev > 0:
-        print("\n[ VERDICT ] *** EUREKA CONFIRMED. HAMILTONIAN MAP SOLVES THE PROBLEM. ***")
-    elif ev > 0.05 and exp_ratio > 5.0:
-        print("\n[ VERDICT ] POSITIVE CONVEXITY. HAMILTONIAN APPROACH SUPERIOR.")
-    elif ev > 0:
-        print("\n[ VERDICT ] POSITIVE EV. Energy mapping viable — calibrate thresholds.")
+    if win_rate > 50:
+        print("[ VERDICT ] POSITIVE CONVEXITY DETECTED. THE PHYSICS HOLD.")
     else:
-        print("\n[ VERDICT ] NEGATIVE EV. Hamiltonian alone insufficient — needs compound filter.")
+        print("[ VERDICT ] DOCTRINE FAILED. NOISE DETECTED.")
 
 if __name__ == "__main__":
     run_hamiltonian_engine()

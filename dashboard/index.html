@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AION Command Center [V2]</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+</head>
+<body>
+    <div id="particles-js"></div>
+    
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="glass-panel">
+            <div class="logo-area">
+                <h1>AION <span class="accent-cyan">COMMAND CENTER</span></h1>
+                <p class="subtitle">THERMODYNAMIC OBSERVATORY [PHASE 4]</p>
+            </div>
+            <div class="status-area">
+                <div class="status-indicator">
+                    <span class="pulse-dot"></span>
+                    <span id="ws-status">TELEMETRY LINK SECURE</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Grid -->
+        <main class="grid-layout-v2">
+            
+            <!-- Left Sidebar -->
+            <aside class="sidebar-left">
+                <section class="glass-panel">
+                    <h2>DYNAMIC CLOCK</h2>
+                    <div class="metric-box">
+                        <p class="metric-label">VOLUME INJECTION</p>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="volume-progress" style="width: 0%;"></div>
+                        </div>
+                        <p class="metric-value" id="volume-text">Awaiting Ticks...</p>
+                    </div>
+                </section>
+                
+                <section class="glass-panel" style="margin-top: 1rem;">
+                    <h2>TENSION TRACKER</h2>
+                    <div id="top-nodes-list" class="node-list">
+                        <p class="empty-text">Calibrating Manifold (50-States)...</p>
+                    </div>
+                </section>
+            </aside>
+            
+            <!-- Center Network Visualization -->
+            <section class="glass-panel main-vis-panel">
+                <div class="panel-header">
+                    <h2>N-DIMENSIONAL RIPPLE GRAPH</h2>
+                    <p class="subtitle">LAPLACIAN ADJACENCY MATRIX</p>
+                </div>
+                <div id="network-container" class="network-container">
+                    <!-- Vis Network renders here -->
+                </div>
+            </section>
+            
+            <!-- Right Sidebar -->
+            <aside class="sidebar-right">
+                <!-- KDE Chart -->
+                <section class="glass-panel">
+                    <h2>KDE TOPOLOGY</h2>
+                    <p class="subtitle" id="kde-subtitle">SELECT A NODE</p>
+                    <div class="chart-container">
+                        <canvas id="kdeChart"></canvas>
+                    </div>
+                </section>
+                
+                <!-- Singularity Log -->
+                <section class="glass-panel" style="margin-top: 1rem;">
+                    <div class="panel-header">
+                        <h2>SINGULARITY LOG</h2>
+                        <span class="badge accent-red" id="event-count">0</span>
+                    </div>
+                    <div id="event-feed" class="event-feed-small">
+                        <div class="empty-state" id="empty-feed">
+                            <p>DORMANT.</p>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Shadow Ledger -->
+                <section class="glass-panel" style="margin-top: 1rem;">
+                    <div class="panel-header">
+                        <h2>SHADOW LEDGER</h2>
+                        <span class="badge accent-cyan" id="shadow-balance">$200.00</span>
+                    </div>
+                    <div id="shadow-active" class="shadow-list">
+                        <p class="empty-text" id="empty-active-shadow">NO ACTIVE TRADES</p>
+                    </div>
+                    <div id="shadow-history" class="shadow-history">
+                    </div>
+                </section>
+            </aside>
+            
+        </main>
+    </div>
+
+    <!-- Engine logic -->
+    <script src="engine.js"></script>
+</body>
+</html>
