@@ -206,11 +206,13 @@ def run_farm_daemon():
     if all_symbols is None: return
         
     candidate_symbols = []
+    anchor_info = mt5.symbol_info("EURUSD")
+    anchor_mode = anchor_info.trade_calc_mode if anchor_info else 0
+    
     for sym in all_symbols:
         if sym.visible and sym.trade_mode == mt5.SYMBOL_TRADE_MODE_FULL:
-            p = sym.path.lower()
-            # Strictly filter for 24/5 continuous markets. Remove 'fx' (caught Netflix) and 'commod' (caught Wheat/OJ)
-            if any(k in p for k in ['forex', 'metal', 'energi']):
+            # Strictly filter by Temporal Alignment to the anchor (guarantees 24/5 continuous physics)
+            if sym.trade_calc_mode == anchor_mode:
                 candidate_symbols.append(sym.name)
     symbols = []
     

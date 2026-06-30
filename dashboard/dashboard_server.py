@@ -473,13 +473,16 @@ async def main():
         print(f"[-] MT5 Init Failed for {BROKER_NAME}. Path: {TERMINAL_PATH}")
         return
         
+    active_symbols = []
+    
+    anchor_info = mt5.symbol_info("EURUSD")
+    anchor_mode = anchor_info.trade_calc_mode if anchor_info else 0
+    
     all_symbols = mt5.symbols_get()
     if all_symbols:
         for sym in all_symbols:
             if sym.visible and sym.trade_mode == mt5.SYMBOL_TRADE_MODE_FULL:
-                p = sym.path.lower()
-                # Strictly filter for 24/5 continuous markets. Remove 'fx' (caught Netflix) and 'commod' (caught Wheat/OJ)
-                if any(k in p for k in ['forex', 'metal', 'energi']):
+                if sym.trade_calc_mode == anchor_mode:
                     active_symbols.append(sym.name)
                     
     print(f"[+] Hooked {len(active_symbols)} dimensions with Independent Physics Clocks.")

@@ -1,19 +1,47 @@
 {
-    "shadow_balance": 203.06473996722906,
+    "shadow_balance": 206.2021409784303,
     "closed_shadow_trades": [
         {
+            "id": 2,
+            "resolution": 3423,
+            "symbol": "AUDJPY",
+            "direction": "LONG",
+            "entry_price": 111.54493000000001,
+            "stop_price": 111.43499999999999,
+            "barycenter": 111.5028152,
+            "risk_amount": 6.955624251763566,
+            "entry_time": "13:11:24",
+            "exit_price": 111.54504999999999,
+            "pnl": 2.664738690422727,
+            "exit_time": "13:11:24"
+        },
+        {
             "id": 3,
-            "resolution": 4692,
-            "symbol": "GBPUSD",
-            "direction": "SHORT",
-            "entry_price": 1.32252105,
-            "stop_price": 1.3234263,
-            "barycenter": 1.3230609910000002,
-            "risk_amount": 5.138257430595049,
-            "entry_time": "13:02:31",
-            "exit_price": 1.3226977000000002,
-            "pnl": 3.0647399672290505,
-            "exit_time": "13:03:09"
+            "resolution": 533,
+            "symbol": "GBPJPY",
+            "direction": "LONG",
+            "entry_price": 214.81503999999993,
+            "stop_price": 214.542504,
+            "barycenter": 214.67632989999998,
+            "risk_amount": 6.168358501695594,
+            "entry_time": "13:12:15",
+            "exit_price": 214.81525,
+            "pnl": 3.1394517590554605,
+            "exit_time": "13:12:21"
+        },
+        {
+            "id": 4,
+            "resolution": 1602,
+            "symbol": "EURJPY",
+            "direction": "LONG",
+            "entry_price": 184.846615,
+            "stop_price": 184.692395,
+            "barycenter": 184.8220216,
+            "risk_amount": 2.4954634403930753,
+            "entry_time": "13:12:56",
+            "exit_price": 184.84923000000003,
+            "pnl": 0.39795052895212135,
+            "exit_time": "13:13:00"
         }
     ]
 }
