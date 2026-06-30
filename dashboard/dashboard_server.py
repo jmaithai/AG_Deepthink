@@ -25,6 +25,8 @@ TERMINAL_PATH = None
 BROKER_NAME = "DEFAULT"
 DRY_RUN = True
 EVENT_THRESHOLD = 25000
+MAX_DRAWDOWN = 15.0
+MAX_CONCURRENT_TRADES = 5
 
 # The 38-Dimensional Optimal Kinetic Tensor
 TENSOR_FILE = "optimal_tensor.json"
@@ -131,6 +133,39 @@ async def physics_stream(websocket):
                 await asyncio.sleep(1)
                 continue
                 
+            if not DRY_RUN:
+                acc = mt5.account_info()
+                if acc:
+                    dd_pct = ((acc.balance - acc.equity) / acc.balance) * 100.0 if acc.balance > 0 else 0
+                    if dd_pct > MAX_DRAWDOWN:
+                        print(f"\n[!!!] CRITICAL: EQUITY DRAWDOWN OF {dd_pct:.2f}% EXCEEDS LIMIT OF {MAX_DRAWDOWN}% [!!!]")
+                        print("[!!!] INITIATING EMERGENCY LIQUIDATION OF ALL ASSETS [!!!]")
+                        positions = mt5.positions_get()
+                        if positions:
+                            for pos in positions:
+                                print(f"[-] Liquidating Position: {pos.symbol}")
+                                tick = mt5.symbol_info_tick(pos.symbol)
+                                s_info = mt5.symbol_info(pos.symbol)
+                                if tick and s_info:
+                                    o_type = mt5.ORDER_TYPE_SELL if pos.type == mt5.ORDER_TYPE_BUY else mt5.ORDER_TYPE_BUY
+                                    p = tick.bid if o_type == mt5.ORDER_TYPE_SELL else tick.ask
+                                    req = {
+                                        "action": mt5.TRADE_ACTION_DEAL,
+                                        "symbol": pos.symbol,
+                                        "volume": pos.volume,
+                                        "type": o_type,
+                                        "position": pos.ticket,
+                                        "price": round(p, s_info.digits),
+                                        "deviation": 20,
+                                        "magic": 100100,
+                                        "comment": "EMERGENCY DRAWDOWN",
+                                        "type_time": mt5.ORDER_TIME_GTC,
+                                        "type_filling": mt5.ORDER_FILLING_IOC,
+                                    }
+                                    mt5.order_send(req)
+                        await asyncio.sleep(10)
+                        continue
+                        
             triggered_sym = None
             
             for sym in active_symbols:
@@ -436,6 +471,60 @@ async def physics_stream(websocket):
                                         'risk_amount': risk_amt,
                                         'entry_time': datetime.now().strftime('%H:%M:%S')
                                     }
+                                    
+                                    if not DRY_RUN:
+                                        account_info = mt5.account_info()
+                                        symbol_info = mt5.symbol_info(ripple_sym)
+                                        if account_info and symbol_info:
+                                            total_positions = mt5.positions_total()
+                                            if total_positions < MAX_CONCURRENT_TRADES and (account_info.margin_level > 150.0 or account_info.margin_level == 0.0):
+                                                live_risk_amt = account_info.margin_free * (risk_pct / 100.0)
+                                                min_stop = symbol_info.trade_tick_size * 10.0
+                                                if hasattr(symbol_info, 'trade_stops_level'):
+                                                    min_stop = max(min_stop, symbol_info.trade_stops_level * symbol_info.point * 1.2)
+                                                
+                                                sl_dist_abs = abs(ripple_curr_p - r_stop)
+                                                sl_dist_abs = max(sl_dist_abs, min_stop)
+                                                
+                                                if sl_dist_abs > 0 and symbol_info.trade_tick_size > 0:
+                                                    if symbol_info.trade_tick_value > 0:
+                                                        sl_points = sl_dist_abs / symbol_info.trade_tick_size
+                                                        loss_per_lot = sl_points * symbol_info.trade_tick_value
+                                                        raw_lot = live_risk_amt / loss_per_lot
+                                                    else:
+                                                        raw_lot = symbol_info.volume_min
+                                                        
+                                                    step = symbol_info.volume_step
+                                                    lot = round(raw_lot / step) * step
+                                                    lot = max(symbol_info.volume_min, min(lot, symbol_info.volume_max))
+                                                    
+                                                    order_type = mt5.ORDER_TYPE_BUY if r_dir == 'LONG' else mt5.ORDER_TYPE_SELL
+                                                    
+                                                    filling_type = mt5.ORDER_FILLING_IOC
+                                                    if symbol_info.filling_mode & 1:
+                                                        filling_type = mt5.ORDER_FILLING_FOK
+                                                    elif symbol_info.filling_mode & 2:
+                                                        filling_type = mt5.ORDER_FILLING_IOC
+                                                    
+                                                    request = {
+                                                        "action": mt5.TRADE_ACTION_DEAL,
+                                                        "symbol": ripple_sym,
+                                                        "volume": float(lot),
+                                                        "type": order_type,
+                                                        "price": round(ripple_tick.ask if order_type == mt5.ORDER_TYPE_BUY else ripple_tick.bid, symbol_info.digits),
+                                                        "sl": round(r_stop, symbol_info.digits),
+                                                        "tp": round(ripple_barycenter, symbol_info.digits),
+                                                        "deviation": 20,
+                                                        "magic": 100100,
+                                                        "comment": "AION_PRIME",
+                                                        "type_time": mt5.ORDER_TIME_GTC,
+                                                        "type_filling": filling_type,
+                                                    }
+                                                    res = mt5.order_send(request)
+                                                    if res is None or res.retcode != mt5.TRADE_RETCODE_DONE:
+                                                        print(f"[-] LIVE ORDER FAILED for {ripple_sym} | Error: {mt5.last_error() if res is None else res.comment}")
+                                                    else:
+                                                        print(f"[+] LIVE RUPTURE EXECUTED | {ripple_sym} | {r_dir} | Vol: {lot} | Ticket: {res.order}")
                                 
                                 events_payload.append({
                                     'symbol': sym,
@@ -495,7 +584,7 @@ async def physics_stream(websocket):
             await asyncio.sleep(1)
 
 async def main():
-    global TERMINAL_PATH, BROKER_NAME, active_symbols, HTTP_PORT, WS_PORT, DRY_RUN
+    global TERMINAL_PATH, BROKER_NAME, active_symbols, HTTP_PORT, WS_PORT, DRY_RUN, EVENT_THRESHOLD, MAX_DRAWDOWN, MAX_CONCURRENT_TRADES
     
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str)
@@ -508,6 +597,8 @@ async def main():
             BROKER_NAME = cfg.get('BROKER_NAME', BROKER_NAME)
             DRY_RUN = cfg.get('DRY_RUN', DRY_RUN)
             EVENT_THRESHOLD = cfg.get('EVENT_THRESHOLD', EVENT_THRESHOLD)
+            MAX_DRAWDOWN = cfg.get('MAX_DRAWDOWN', MAX_DRAWDOWN)
+            MAX_CONCURRENT_TRADES = cfg.get('MAX_CONCURRENT_TRADES', MAX_CONCURRENT_TRADES)
             if 'DASHBOARD_PORT' in cfg:
                 HTTP_PORT = cfg['DASHBOARD_PORT']
                 WS_PORT = HTTP_PORT + 1000
