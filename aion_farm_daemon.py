@@ -223,8 +223,20 @@ def run_farm_daemon():
     dynamic_window = 50 # Rolling window length for live KDE evaluation
     
     state_memory = pd.DataFrame(columns=symbols)
+    # PRE-FILL KINETIC CACHE FROM M1 HISTORY
+    for i in range(dynamic_window):
+        state_memory.loc[i] = [np.nan] * len(symbols)
+        
+    for sym in symbols:
+        rates = mt5.copy_rates_from_pos(sym, mt5.TIMEFRAME_M1, 0, dynamic_window)
+        if rates is not None and len(rates) == dynamic_window:
+            state_memory[sym] = rates['close']
+            
+    state_memory.ffill(inplace=True)
+    state_memory.bfill(inplace=True)
+    
     cumulative_volume = 0
-    current_state_idx = 0
+    current_state_idx = dynamic_window
     
     current_prices = {sym: [] for sym in symbols}
     last_tick_time = {sym: 0 for sym in symbols}
