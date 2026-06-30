@@ -210,7 +210,8 @@ async def physics_stream(websocket):
                     
             heartbeat = {
                 'type': 'heartbeat',
-                'volume_progress': min(max_progress * 100, 100)
+                'volume_progress': min(max_progress * 100, 100),
+                'is_live': not DRY_RUN
             }
             await websocket.send(json.dumps(heartbeat))
             

@@ -74,6 +74,13 @@ function connectWebSocket() {
         if (data.type === 'heartbeat') {
             document.getElementById('volume-progress').style.width = `${data.volume_progress}%`;
             document.getElementById('volume-text').innerText = `Ingesting: ${data.volume_progress.toFixed(1)}%`;
+            if (data.is_live !== undefined) {
+                const ledgerTypeEl = document.getElementById('ledger-type');
+                if (ledgerTypeEl) {
+                    ledgerTypeEl.innerText = data.is_live ? 'LIVE' : 'SHADOW';
+                    ledgerTypeEl.className = data.is_live ? 'text-teal' : '';
+                }
+            }
         } else if (data.type === 'physics_update') {
             globalNodesData = data.nodes;
             updateUI(data);
