@@ -209,7 +209,8 @@ def run_farm_daemon():
     for sym in all_symbols:
         if sym.visible and sym.trade_mode == mt5.SYMBOL_TRADE_MODE_FULL:
             p = sym.path.lower()
-            if any(k in p for k in ['forex', 'fx', 'metal', 'energi', 'commod']):
+            # Strictly filter for 24/5 continuous markets. Remove 'fx' (caught Netflix) and 'commod' (caught Wheat/OJ)
+            if any(k in p for k in ['forex', 'metal', 'energi']):
                 candidate_symbols.append(sym.name)
     symbols = []
     
@@ -306,7 +307,8 @@ def run_farm_daemon():
                 cumulative_volume = 0
                 current_prices = {sym: [] for sym in symbols}
                 
-                prices = prices_matrix.astype(float)
+                if True:
+                    prices = prices_matrix.astype(float)
                     
                     velocity = np.diff(prices, axis=0, prepend=prices[0:1])
                     std_v = np.std(velocity, axis=0) + 1e-12
@@ -371,6 +373,17 @@ def run_farm_daemon():
                             trap_sym = symbols[trap_idx]
                             push_up = network_force[trap_idx] > 0
                             direction = "LONG (BUY)" if push_up else "SHORT (SELL)"
+                            
+                            # THE FRICTION FILTER
+                            hist_p = prices[:, trap_idx]
+                            tick = mt5.symbol_info_tick(trap_sym)
+                            if tick:
+                                spread = tick.ask - tick.bid
+                                friction = spread * 1.5
+                                vacuum_dist = abs(prices[-1, trap_idx] - np.mean(hist_p))
+                                if vacuum_dist <= friction:
+                                    print(f"[-] RUPTURE ABORTED [{trap_sym}]: Potential Energy ({vacuum_dist:.5f}) <= Friction ({friction:.5f})")
+                                    continue
                             
                             # THE SHIELD: Dynamic Risk & Topographical Stop
                             kde = kdes[trap_idx]

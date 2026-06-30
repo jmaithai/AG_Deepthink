@@ -169,7 +169,8 @@ async def physics_stream(websocket):
                 prices_matrix = np.roll(prices_matrix, -1, axis=0)
                 prices_matrix[-1, :] = new_state
                 
-                prices = prices_matrix.astype(float)
+                if True:
+                    prices = prices_matrix.astype(float)
                     
                     velocity = np.diff(prices, axis=0, prepend=prices[0:1])
                     std_v = np.std(velocity, axis=0) + 1e-12
@@ -315,6 +316,15 @@ async def physics_stream(websocket):
                             if np.sign(network_force[idx]) != np.sign(current_v[idx]) or abs(current_v[idx]) < 0.1:
                                 push_up = network_force[idx] > 0
                                 direction = "LONG" if push_up else "SHORT"
+                                
+                                # PRIMARY FRICTION FILTER
+                                tick = mt5.symbol_info_tick(sym)
+                                if tick:
+                                    spread = tick.ask - tick.bid
+                                    friction = spread * 1.5
+                                    vacuum_dist = abs(curr_p - np.mean(hist_p))
+                                    if vacuum_dist <= friction:
+                                        continue
                                 
                                 try:
                                     kde = gaussian_kde(hist_p, bw_method='silverman')
@@ -468,7 +478,8 @@ async def main():
         for sym in all_symbols:
             if sym.visible and sym.trade_mode == mt5.SYMBOL_TRADE_MODE_FULL:
                 p = sym.path.lower()
-                if any(k in p for k in ['forex', 'fx', 'metal', 'energi', 'commod']):
+                # Strictly filter for 24/5 continuous markets. Remove 'fx' (caught Netflix) and 'commod' (caught Wheat/OJ)
+                if any(k in p for k in ['forex', 'metal', 'energi']):
                     active_symbols.append(sym.name)
                     
     print(f"[+] Hooked {len(active_symbols)} dimensions with Independent Physics Clocks.")
