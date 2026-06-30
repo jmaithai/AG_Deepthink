@@ -1,8 +1,4 @@
-// Particles JS Config
-particlesJS("particles-js", {
-    "particles": { "number": { "value": 40 }, "color": { "value": "#00E5FF" }, "opacity": { "value": 0.15 }, "size": { "value": 1.5 }, "line_linked": { "enable": true, "distance": 150, "color": "#00E5FF", "opacity": 0.05, "width": 1 }, "move": { "enable": true, "speed": 0.8 } }
-});
-
+// Particles JS removed for V4 Minimalist
 // Globals
 const HTTP_PORT = window.location.port ? parseInt(window.location.port) : 8080;
 const WS_PORT = HTTP_PORT + 1000;
