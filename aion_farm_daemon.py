@@ -90,12 +90,10 @@ def liquidate_farm(symbol, reason):
                 price = round(price, symbol_info.digits)
                 
                 filling_type = mt5.ORDER_FILLING_IOC
-                if symbol_info.filling_mode & mt5.SYMBOL_FILLING_FOK:
+                if symbol_info.filling_mode & 1:
                     filling_type = mt5.ORDER_FILLING_FOK
-                elif symbol_info.filling_mode & mt5.SYMBOL_FILLING_IOC:
+                elif symbol_info.filling_mode & 2:
                     filling_type = mt5.ORDER_FILLING_IOC
-                elif symbol_info.filling_mode & mt5.SYMBOL_FILLING_RETURN:
-                    filling_type = mt5.ORDER_FILLING_RETURN
                 
                 request = {
                     "action": mt5.TRADE_ACTION_DEAL,
@@ -169,12 +167,20 @@ def execute_singularity(symbol, direction, risk_pct, stop_dist, ripple_target):
             tick = mt5.symbol_info_tick(symbol)
             
             min_stop = symbol_info.trade_tick_size * 10.0
+            if hasattr(symbol_info, 'trade_stops_level'):
+                min_stop = max(min_stop, symbol_info.trade_stops_level * symbol_info.point * 1.2)
+            
             sl_dist_abs = max(stop_dist, min_stop)
             
-            if sl_dist_abs > 0 and symbol_info.trade_tick_value > 0 and symbol_info.trade_tick_size > 0:
-                sl_points = sl_dist_abs / symbol_info.trade_tick_size
-                loss_per_lot = sl_points * symbol_info.trade_tick_value
-                raw_lot = risk_amount / loss_per_lot
+            if sl_dist_abs > 0 and symbol_info.trade_tick_size > 0:
+                if symbol_info.trade_tick_value > 0:
+                    sl_points = sl_dist_abs / symbol_info.trade_tick_size
+                    loss_per_lot = sl_points * symbol_info.trade_tick_value
+                    raw_lot = risk_amount / loss_per_lot
+                else:
+                    # Fallback if tick_value is 0 (broker data issue)
+                    raw_lot = symbol_info.volume_min
+                    print(f"[!] Warning: {symbol} trade_tick_value is 0. Using minimum lot size.")
                 
                 step = symbol_info.volume_step
                 lot = round(raw_lot / step) * step
@@ -188,12 +194,10 @@ def execute_singularity(symbol, direction, risk_pct, stop_dist, ripple_target):
                 sl = round(sl, symbol_info.digits)
                 
                 filling_type = mt5.ORDER_FILLING_IOC
-                if symbol_info.filling_mode & mt5.SYMBOL_FILLING_FOK:
+                if symbol_info.filling_mode & 1:
                     filling_type = mt5.ORDER_FILLING_FOK
-                elif symbol_info.filling_mode & mt5.SYMBOL_FILLING_IOC:
+                elif symbol_info.filling_mode & 2:
                     filling_type = mt5.ORDER_FILLING_IOC
-                elif symbol_info.filling_mode & mt5.SYMBOL_FILLING_RETURN:
-                    filling_type = mt5.ORDER_FILLING_RETURN
                 
                 request = {
                     "action": mt5.TRADE_ACTION_DEAL,
@@ -210,11 +214,23 @@ def execute_singularity(symbol, direction, risk_pct, stop_dist, ripple_target):
                 }
                 
                 res = mt5.order_send(request)
-                if res.retcode != mt5.TRADE_RETCODE_DONE:
-                    print(f"[-] MT5 OrderSend Failed | Code: {res.retcode} | {res.comment}")
+                if res is None:
+                    error_msg = f"[-] MT5 OrderSend Failed completely (Returned None). Error code: {mt5.last_error()}"
+                    print(error_msg)
+                    with open("trade_log.txt", "a") as f: f.write(f"{datetime.now()} | {error_msg}\n")
+                elif res.retcode != mt5.TRADE_RETCODE_DONE:
+                    error_msg = f"[-] MT5 OrderSend Failed | Code: {res.retcode} | {res.comment} | Sym: {symbol} | Vol: {lot} | Prc: {price} | SL: {sl}"
+                    print(error_msg)
+                    with open("trade_log.txt", "a") as f: f.write(f"{datetime.now()} | {error_msg}\n")
                 else:
-                    print(f"[+] MT5 Order Executed | Ticket: {res.order} | Vol: {lot} | Price: {res.price}")
+                    success_msg = f"[+] MT5 Order Executed | Ticket: {res.order} | Vol: {lot} | Price: {res.price}"
+                    print(success_msg)
+                    with open("trade_log.txt", "a") as f: f.write(f"{datetime.now()} | {success_msg}\n")
                     active_farms[symbol]['ticket'] = res.order
+            else:
+                error_msg = f"[-] RUPTURE ABORTED: Invalid Math | SL_Dist: {sl_dist_abs} | Tick_Size: {symbol_info.trade_tick_size}"
+                print(error_msg)
+                with open("trade_log.txt", "a") as f: f.write(f"{datetime.now()} | {error_msg}\n")
 
 def run_farm_daemon():
     load_config()
