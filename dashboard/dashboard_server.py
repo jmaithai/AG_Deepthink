@@ -100,25 +100,24 @@ async def physics_stream(websocket):
     dynamic_window = 50
     last_msc = {sym: 0 for sym in active_symbols}
     
-    # 38-D Independent Event Clocks
-    state_memory = pd.DataFrame(columns=active_symbols)
+    # Pre-allocate 2D Numpy Matrix
+    prices_matrix = np.full((dynamic_window, len(active_symbols)), np.nan)
     
     # PRE-FILL KINETIC CACHE FROM M1 HISTORY
-    for i in range(dynamic_window):
-        state_memory.loc[i] = [np.nan] * len(active_symbols)
-        
-    for sym in active_symbols:
+    for idx, sym in enumerate(active_symbols):
         rates = mt5.copy_rates_from_pos(sym, mt5.TIMEFRAME_M1, 0, dynamic_window)
         if rates is not None and len(rates) == dynamic_window:
-            state_memory[sym] = rates['close']
+            prices_matrix[:, idx] = rates['close']
             
-    state_memory.ffill(inplace=True)
-    state_memory.bfill(inplace=True)
+    # Initial forward/backward fill for the cold boot sequence
+    df_temp = pd.DataFrame(prices_matrix)
+    df_temp.ffill(inplace=True)
+    df_temp.bfill(inplace=True)
+    prices_matrix = df_temp.values
 
     # Use rolling window of 100 ticks to calculate localized smoothed price
     current_prices = {sym: collections.deque(maxlen=100) for sym in active_symbols}
     cumulative_ticks = {sym: 0 for sym in active_symbols}
-    current_state_idx = dynamic_window
     
     while True:
         try:
@@ -159,13 +158,18 @@ async def physics_stream(websocket):
                 cumulative_ticks[triggered_sym] = 0
                 
                 # Snapshot global structural state using smoothed localized prices
-                state_close = {sym: np.mean(current_prices[sym]) if current_prices[sym] else np.nan for sym in active_symbols}
-                state_memory.loc[current_state_idx] = state_close
-                state_memory = state_memory.ffill().fillna(method='bfill')
+                new_state = np.zeros(len(active_symbols))
+                for idx, sym in enumerate(active_symbols):
+                    if current_prices[sym]:
+                        new_state[idx] = np.mean(current_prices[sym])
+                    else:
+                        new_state[idx] = prices_matrix[-1, idx] # Instant O(1) Numpy forward-fill
                 
-                if current_state_idx >= dynamic_window:
-                    window_df = state_memory.iloc[-dynamic_window:]
-                    prices = window_df.values.astype(float)
+                # Shift matrix up by 1 and insert new state at the bottom (Ring Buffer)
+                prices_matrix = np.roll(prices_matrix, -1, axis=0)
+                prices_matrix[-1, :] = new_state
+                
+                prices = prices_matrix.astype(float)
                     
                     velocity = np.diff(prices, axis=0, prepend=prices[0:1])
                     std_v = np.std(velocity, axis=0) + 1e-12
@@ -420,10 +424,7 @@ async def physics_stream(websocket):
                     }
                     await websocket.send(json.dumps(payload))
                 
-                if current_state_idx > dynamic_window + 10:
-                    state_memory = state_memory.iloc[1:].reset_index(drop=True)
-                else:
-                    current_state_idx += 1
+                pass
             
             await asyncio.sleep(0.01)
             

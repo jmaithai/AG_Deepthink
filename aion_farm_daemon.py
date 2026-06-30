@@ -222,21 +222,22 @@ def run_farm_daemon():
     
     dynamic_window = 50 # Rolling window length for live KDE evaluation
     
-    state_memory = pd.DataFrame(columns=symbols)
+    # Pre-allocate 2D Numpy Matrix
+    prices_matrix = np.full((dynamic_window, len(symbols)), np.nan)
+    
     # PRE-FILL KINETIC CACHE FROM M1 HISTORY
-    for i in range(dynamic_window):
-        state_memory.loc[i] = [np.nan] * len(symbols)
-        
-    for sym in symbols:
+    for idx, sym in enumerate(symbols):
         rates = mt5.copy_rates_from_pos(sym, mt5.TIMEFRAME_M1, 0, dynamic_window)
         if rates is not None and len(rates) == dynamic_window:
-            state_memory[sym] = rates['close']
+            prices_matrix[:, idx] = rates['close']
             
-    state_memory.ffill(inplace=True)
-    state_memory.bfill(inplace=True)
+    # Initial forward/backward fill for the cold boot sequence
+    df_temp = pd.DataFrame(prices_matrix)
+    df_temp.ffill(inplace=True)
+    df_temp.bfill(inplace=True)
+    prices_matrix = df_temp.values
     
     cumulative_volume = 0
-    current_state_idx = dynamic_window
     
     current_prices = {sym: [] for sym in symbols}
     last_tick_time = {sym: 0 for sym in symbols}
@@ -289,20 +290,23 @@ def run_farm_daemon():
                     cumulative_volume += tick.volume
             
             if cumulative_volume >= EVENT_THRESHOLD:
-                state_close = {sym: np.mean(current_prices[sym]) if current_prices[sym] else np.nan for sym in symbols}
+                new_state = np.zeros(len(symbols))
+                for idx, sym in enumerate(symbols):
+                    if current_prices[sym]:
+                        new_state[idx] = np.mean(current_prices[sym])
+                    else:
+                        new_state[idx] = prices_matrix[-1, idx] # Instant O(1) Numpy forward-fill
                 
-                state_memory.loc[current_state_idx] = state_close
-                state_memory = state_memory.ffill().fillna(method='bfill')
+                # Shift matrix up by 1 and insert new state at the bottom (Ring Buffer)
+                prices_matrix = np.roll(prices_matrix, -1, axis=0)
+                prices_matrix[-1, :] = new_state
                 
-                print(f"[~] Event State {current_state_idx} Captured. Mapping Topology...")
+                print("[~] Event State Captured. Mapping Topology...")
                 
                 cumulative_volume = 0
                 current_prices = {sym: [] for sym in symbols}
                 
-                if current_state_idx >= dynamic_window:
-                    # Isolate the rolling memory window
-                    window_df = state_memory.iloc[-dynamic_window:]
-                    prices = window_df.values.astype(float)
+                prices = prices_matrix.astype(float)
                     
                     velocity = np.diff(prices, axis=0, prepend=prices[0:1])
                     std_v = np.std(velocity, axis=0) + 1e-12
@@ -399,11 +403,7 @@ def run_farm_daemon():
                             
                             execute_singularity(trap_sym, direction, risk_pct, stop_dist, secondary_sym)
                 
-                # Maintain finite memory
-                if current_state_idx > dynamic_window + 10:
-                    state_memory = state_memory.iloc[1:].reset_index(drop=True)
-                else:
-                    current_state_idx += 1
+                pass
             
             time.sleep(0.01) 
             
