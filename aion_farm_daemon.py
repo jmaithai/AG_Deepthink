@@ -124,7 +124,7 @@ def liquidate_farm(symbol, reason):
         print("="*80)
         del active_farms[symbol]
 
-def execute_singularity(symbol, direction, risk_pct, stop_dist, ripple_target):
+def execute_singularity(symbol, direction, risk_pct, stop_dist, ripple_target, tp_price=None):
     """Executes the physical rupture and initiates the shield."""
     if symbol not in active_farms:
         active_farms[symbol] = {'direction': direction, 'accumulated_mass': 1, 'entry_time': datetime.now().strftime('%H:%M:%S')}
@@ -212,6 +212,8 @@ def execute_singularity(symbol, direction, risk_pct, stop_dist, ripple_target):
                     "type_time": mt5.ORDER_TIME_GTC,
                     "type_filling": filling_type,
                 }
+                if tp_price is not None:
+                    request["tp"] = round(tp_price, symbol_info.digits)
                 
                 res = mt5.order_send(request)
                 if res is None:
@@ -523,7 +525,7 @@ def run_farm_daemon():
                                         r_stop = ripple_curr_p + friction * 2
                                     stop_dist_abs = abs(r_stop - ripple_curr_p)
                                 
-                                execute_singularity(ripple_sym, r_dir, risk_pct, stop_dist_abs, trap_sym)
+                                execute_singularity(ripple_sym, r_dir, risk_pct, stop_dist_abs, trap_sym, ripple_barycenter)
                 
                 pass
             
