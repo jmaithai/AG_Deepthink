@@ -28,7 +28,7 @@ MAX_CONCURRENT_TRADES = 5
 active_farms = {} 
 
 def load_config():
-    global EVENT_THRESHOLD, DRY_RUN, MAX_FARM_MASS, TERMINAL_PATH, BROKER_NAME
+    global EVENT_THRESHOLD, DRY_RUN, MAX_FARM_MASS, TERMINAL_PATH, BROKER_NAME, MAX_DRAWDOWN, MAX_CONCURRENT_TRADES
     parser = argparse.ArgumentParser(description='AION Live Singularity Sentinel')
     parser.add_argument('--config', type=str, help='Path to broker config JSON')
     
