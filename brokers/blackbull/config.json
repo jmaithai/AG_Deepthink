@@ -2,7 +2,7 @@
     "BROKER_NAME": "Blackbull",
     "TERMINAL_PATH": "E:\\Blackbull\\terminal64.exe",
     "MAX_FARM_MASS": 50,
-    "MAX_DRAWDOWN": 15.0,
+    "EVENT_THRESHOLD": 25000,
     "DRY_RUN": false,
-    "SHARPE_THRESHOLD": 2.58082
+    "DASHBOARD_PORT": 8091
 }

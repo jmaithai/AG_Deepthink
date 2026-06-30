@@ -32,8 +32,8 @@ function initNetwork() {
     const container = document.getElementById('network-container');
     const data = { nodes: nodesDataset, edges: edgesDataset };
     const options = {
-        nodes: { shape: 'dot', font: { color: '#FFF', face: 'Space Grotesk', size: 12, strokeWidth: 0 }, borderWidth: 2, shadow: { enabled: true, color: 'rgba(0,0,0,0.8)', size: 10 } },
-        edges: { color: { color: 'rgba(0,229,255,0.1)', highlight: '#FF2A55' }, smooth: { type: 'continuous' } },
+        nodes: { shape: 'dot', font: { color: '#8B949E', face: 'Space Grotesk', size: 10, strokeWidth: 0 }, borderWidth: 1, shadow: false },
+        edges: { color: { color: 'rgba(255,255,255,0.05)', highlight: '#00E5FF' }, width: 1, smooth: { type: 'continuous' } },
         physics: { barnesHut: { gravitationalConstant: -2000, centralGravity: 0.3, springLength: 150 } },
         interaction: { hover: true }
     };
@@ -96,7 +96,7 @@ function updateUI(data) {
     listEl.innerHTML = '';
     let sortedNodes = [...data.nodes].sort((a, b) => Math.abs(b.sigma) - Math.abs(a.sigma));
     
-    sortedNodes.slice(0, 15).forEach(node => {
+    sortedNodes.slice(0, 3).forEach(node => {
         const isDanger = Math.abs(node.sigma) > 2.0;
         const colorClass = isDanger ? 'text-crimson' : 'text-primary';
         const dangerClass = isDanger ? 'danger-node' : '';
@@ -167,6 +167,9 @@ function updateUI(data) {
                 </div>
             </div>`;
             feed.insertAdjacentHTML('afterbegin', html);
+            if (feed.children.length > 4) { // 3 events + empty state hidden
+                feed.lastElementChild.remove();
+            }
         });
     }
 
@@ -204,7 +207,7 @@ function updateUI(data) {
     if (data.closed_shadows !== undefined) {
         const historyContainer = document.getElementById('shadow-history');
         historyContainer.innerHTML = '';
-        const reversedHistory = [...data.closed_shadows].reverse();
+        const reversedHistory = [...data.closed_shadows].reverse().slice(0, 3);
         reversedHistory.forEach(trade => {
             const isWin = trade.pnl > 0;
             const eventClass = isWin ? 'event-win' : 'event-loss';

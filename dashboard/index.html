@@ -3,105 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AION Command Center [V3]</title>
-    <link rel="stylesheet" href="style.css?v=3">
+    <title>AION PRIME [V4 Minimalist]</title>
+    <link rel="stylesheet" href="style.css?v=4">
     
     <!-- External Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
 </head>
 <body>
-    <div id="particles-js"></div>
     
-    <div class="hud-wrapper">
-        <!-- Header -->
-        <header class="hud-header">
-            <div>
-                <h1>AION <span class="text-teal">PRIME</span></h1>
-                <p class="subtitle">THERMODYNAMIC OBSERVATORY [V3 HUD]</p>
-            </div>
-            <div class="status-indicator">
-                <span class="pulse-dot"></span>
-                <span id="ws-status" class="text-teal">TELEMETRY LINK SECURE</span>
-            </div>
-        </header>
+    <!-- Fullscreen Network Background -->
+    <div id="network-container" class="network-bg"></div>
 
-        <!-- Main Content Grid -->
-        <main class="hud-grid">
-            
-            <!-- Left Sidebar -->
-            <aside class="glass-panel dynamic-col">
-                <section>
-                    <h2><span class="text-violet">#</span> DYNAMIC CLOCK</h2>
-                    <div class="metric-group">
-                        <p class="text-dim font-display" style="font-size: 0.8rem">VOLUME INJECTION (PROPER TIME)</p>
-                        <div class="progress-container">
-                            <div class="progress-bar" id="volume-progress" style="width: 0%;"></div>
-                        </div>
-                        <p class="metric-value text-teal" id="volume-text">Awaiting Ticks...</p>
-                    </div>
-                </section>
-                
-                <section style="display:flex; flex-direction:column; min-height:0; flex-grow:1;">
-                    <h2><span class="text-crimson">#</span> TENSION TRACKER</h2>
-                    <div id="top-nodes-list" class="scroll-area">
-                        <div class="empty-state">Calibrating Manifold...</div>
-                    </div>
-                </section>
-            </aside>
-            
-            <!-- Center Network Visualization -->
-            <section class="glass-panel center-stage">
-                <div class="panel-header-flex">
-                    <h2><span class="text-teal">#</span> N-DIMENSIONAL RIPPLE GRAPH</h2>
-                    <span class="badge">LAPLACIAN TOPOLOGY</span>
+    <!-- Floating HUD Overlay -->
+    <div class="hud-overlay">
+        
+        <!-- Top Left: Branding & Clock -->
+        <div class="floating-panel top-left">
+            <header>
+                <h1>AION PRIME</h1>
+                <p class="subtitle">THERMODYNAMIC OBSERVATORY [V4]</p>
+                <div class="status-indicator">
+                    <span class="pulse-dot"></span>
+                    <span id="ws-status" class="text-teal">LINK SECURE</span>
                 </div>
-                <div id="network-container" class="network-container">
-                    <!-- Vis Network renders here -->
-                </div>
-            </section>
+            </header>
             
-            <!-- Right Sidebar -->
-            <aside class="glass-panel dynamic-col">
-                <!-- KDE Chart -->
-                <section>
-                    <div class="panel-header-flex">
-                        <h2><span class="text-teal">#</span> KDE TOPOLOGY</h2>
-                        <span class="badge" id="kde-subtitle">SELECT NODE</span>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="kdeChart"></canvas>
-                    </div>
-                </section>
-                
-                <!-- Singularity Log -->
-                <section style="display:flex; flex-direction:column; min-height:0; flex-grow:1;">
-                    <div class="panel-header-flex">
-                        <h2><span class="text-crimson">#</span> SINGULARITY LOG</h2>
-                        <span class="badge" style="color:var(--brand-crimson); border: 1px solid var(--brand-crimson);" id="event-count">0</span>
-                    </div>
-                    <div id="event-feed" class="scroll-area" style="flex-grow:0; max-height:200px; margin-bottom:1rem;">
-                        <div class="empty-state" id="empty-feed">DORMANT.</div>
-                    </div>
+            <div class="widget spacer-top">
+                <div class="widget-header">
+                    <h2>DYNAMIC CLOCK</h2>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="volume-progress" style="width: 0%;"></div>
+                </div>
+                <p class="metric-value text-teal" id="volume-text">Awaiting Ticks...</p>
+            </div>
+        </div>
 
-                    <!-- Shadow Ledger -->
-                    <div class="panel-header-flex">
-                        <h2><span class="text-teal">#</span> SHADOW LEDGER</h2>
-                        <span class="badge" style="color:var(--brand-teal); border: 1px solid var(--brand-teal);" id="shadow-balance">$200.00</span>
-                    </div>
-                    <div id="shadow-active" class="scroll-area" style="flex-grow:0; max-height: 120px; margin-bottom:1rem;">
-                        <div class="empty-state" id="empty-active-shadow">NO ACTIVE TRADES</div>
-                    </div>
-                    <div id="shadow-history" class="scroll-area" style="flex-grow:1;">
-                    </div>
-                </section>
-            </aside>
-            
-        </main>
+        <!-- Bottom Left: Tension Tracker -->
+        <div class="floating-panel bottom-left">
+            <div class="widget">
+                <div class="widget-header">
+                    <h2>TENSION TRACKER <span class="badge">TOP 3</span></h2>
+                </div>
+                <div id="top-nodes-list" class="minimal-list">
+                    <div class="empty-state">Calibrating...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Right: KDE Chart -->
+        <div class="floating-panel top-right">
+            <div class="widget">
+                <div class="widget-header">
+                    <h2>KDE TOPOLOGY <span class="badge" id="kde-subtitle">SELECT NODE</span></h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="kdeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Right: Ledger & Logs -->
+        <div class="floating-panel bottom-right">
+            <div class="widget">
+                <div class="widget-header">
+                    <h2>SHADOW LEDGER <span class="badge" id="shadow-balance">$200.00</span></h2>
+                </div>
+                <div id="shadow-active" class="minimal-list spacer-bottom">
+                    <div class="empty-state">NO ACTIVE TRADES</div>
+                </div>
+            </div>
+
+            <div class="widget">
+                <div class="widget-header">
+                    <h2>SINGULARITY LOG <span class="badge" id="event-count">0</span></h2>
+                </div>
+                <div id="event-feed" class="minimal-list">
+                    <div class="empty-state">DORMANT.</div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Engine logic -->
-    <script src="engine.js?v=3"></script>
+    <script src="engine.js?v=4"></script>
 </body>
 </html>

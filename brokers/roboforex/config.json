@@ -4,5 +4,5 @@
     "MAX_FARM_MASS": 50,
     "EVENT_THRESHOLD": 25000,
     "DRY_RUN": false,
-    "DASHBOARD_PORT": 8083
+    "DASHBOARD_PORT": 8093
 }
