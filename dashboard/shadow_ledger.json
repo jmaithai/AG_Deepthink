@@ -1,5 +1,5 @@
 {
-    "shadow_balance": 194.44729409539178,
+    "shadow_balance": 201.57475130681323,
     "closed_shadow_trades": [
         {
             "id": 1,
@@ -70,6 +70,48 @@
             "exit_price": 3504.9481000000005,
             "pnl": -7.789382661520311,
             "exit_time": "11:33:31"
+        },
+        {
+            "id": 8,
+            "resolution": 2602,
+            "symbol": "AUDCHF",
+            "direction": "LONG",
+            "entry_price": 0.55621755,
+            "stop_price": 0.55535649,
+            "barycenter": 0.555676216,
+            "risk_amount": 3.668590247241324,
+            "entry_time": "11:51:42",
+            "exit_price": 0.55621755,
+            "pnl": 2.306381242770797,
+            "exit_time": "11:51:48"
+        },
+        {
+            "id": 9,
+            "resolution": 2500,
+            "symbol": "GBPCHF",
+            "direction": "LONG",
+            "entry_price": 1.07102205,
+            "stop_price": 1.07025429,
+            "barycenter": 1.070625406,
+            "risk_amount": 5.549916685527419,
+            "entry_time": "11:53:40",
+            "exit_price": 1.07118275,
+            "pnl": 2.8672256353738628,
+            "exit_time": "12:01:07"
+        },
+        {
+            "id": 10,
+            "resolution": 594,
+            "symbol": "EURCAD",
+            "direction": "SHORT",
+            "entry_price": 1.6214321,
+            "stop_price": 1.6222765199999998,
+            "barycenter": 1.6219693900000005,
+            "risk_amount": 3.070725862055194,
+            "entry_time": "12:01:16",
+            "exit_price": 1.6215255,
+            "pnl": 1.9538503332767927,
+            "exit_time": "12:01:58"
         }
     ]
 }

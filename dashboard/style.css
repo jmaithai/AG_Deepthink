@@ -58,16 +58,19 @@ body {
 .floating-panel {
     position: absolute;
     padding: 2.5rem;
-    pointer-events: auto; /* Re-enable clicks on the panels */
+    pointer-events: auto;
     display: flex;
     flex-direction: column;
     gap: 2.5rem;
+    height: 100vh;
+    overflow-y: auto;
 }
 
-.top-left { top: 0; left: 0; }
-.bottom-left { bottom: 0; left: 0; }
-.top-right { top: 0; right: 0; width: 450px; }
-.bottom-right { bottom: 0; right: 0; width: 400px; }
+.left-panel { top: 0; left: 0; width: 380px; }
+.right-panel { top: 0; right: 0; width: 440px; }
+
+/* Hide scrollbar for main panels to stay minimalist */
+.floating-panel::-webkit-scrollbar { width: 0px; }
 
 /* Typography */
 h1 {

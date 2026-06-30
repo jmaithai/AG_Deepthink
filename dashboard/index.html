@@ -18,8 +18,8 @@
     <!-- Floating HUD Overlay -->
     <div class="hud-overlay">
         
-        <!-- Top Left: Branding & Clock -->
-        <div class="floating-panel top-left">
+        <!-- Left Panel -->
+        <div class="floating-panel left-panel">
             <header>
                 <h1>AION PRIME</h1>
                 <p class="subtitle">THERMODYNAMIC OBSERVATORY [V4]</p>
@@ -38,11 +38,8 @@
                 </div>
                 <p class="metric-value text-teal" id="volume-text">Awaiting Ticks...</p>
             </div>
-        </div>
 
-        <!-- Bottom Left: Tension Tracker -->
-        <div class="floating-panel bottom-left">
-            <div class="widget">
+            <div class="widget" style="margin-top: auto;">
                 <div class="widget-header">
                     <h2>TENSION TRACKER <span class="badge">TOP 3</span></h2>
                 </div>
@@ -52,8 +49,8 @@
             </div>
         </div>
 
-        <!-- Top Right: KDE Chart -->
-        <div class="floating-panel top-right">
+        <!-- Right Panel -->
+        <div class="floating-panel right-panel">
             <div class="widget">
                 <div class="widget-header">
                     <h2>KDE TOPOLOGY <span class="badge" id="kde-subtitle">SELECT NODE</span></h2>
@@ -62,10 +59,7 @@
                     <canvas id="kdeChart"></canvas>
                 </div>
             </div>
-        </div>
 
-        <!-- Bottom Right: Ledger & Logs -->
-        <div class="floating-panel bottom-right">
             <div class="widget">
                 <div class="widget-header">
                     <h2>SHADOW LEDGER <span class="badge" id="shadow-balance">$200.00</span></h2>
