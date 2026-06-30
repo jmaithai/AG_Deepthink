@@ -130,10 +130,6 @@ def execute_singularity(symbol, direction, risk_pct, stop_dist, ripple_target, t
         active_farms[symbol] = {'direction': direction, 'accumulated_mass': 1, 'entry_time': datetime.now().strftime('%H:%M:%S')}
         action = "PRIMARY RUPTURE ENTRY"
     else:
-        if active_farms[symbol]['direction'] != direction:
-            liquidate_farm(symbol, "Directional Inversion (Physics Swap)")
-            return
-            
         if active_farms[symbol]['accumulated_mass'] < MAX_FARM_MASS:
             active_farms[symbol]['accumulated_mass'] += 1
             action = "SCALED IN"
@@ -362,7 +358,7 @@ def run_farm_daemon():
                         current_prices = {s: collections.deque(maxlen=100) for s in symbols}
                         last_tick_time = {s: tick.time_msc for s in symbols}
                     
-                    threshold = OPTIMAL_THRESHOLDS.get(sym, 2500)
+                    threshold = OPTIMAL_THRESHOLDS.get(sym, EVENT_THRESHOLD)
                     if cumulative_ticks[sym] >= threshold:
                         triggered_sym = sym
             

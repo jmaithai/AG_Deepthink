@@ -24,6 +24,7 @@ WS_PORT = 9080
 TERMINAL_PATH = None
 BROKER_NAME = "DEFAULT"
 DRY_RUN = True
+EVENT_THRESHOLD = 25000
 
 # The 38-Dimensional Optimal Kinetic Tensor
 TENSOR_FILE = "optimal_tensor.json"
@@ -161,14 +162,14 @@ async def physics_stream(websocket):
                         current_prices = {s: collections.deque(maxlen=100) for s in active_symbols}
                         last_msc = {s: tick.time_msc for s in active_symbols}
                     
-                    threshold = OPTIMAL_THRESHOLDS.get(sym, 2500)
+                    threshold = OPTIMAL_THRESHOLDS.get(sym, EVENT_THRESHOLD)
                     if cumulative_ticks[sym] >= threshold:
                         triggered_sym = sym
             
             # Send heartbeat progress of the fastest ticking node relative to its threshold
             max_progress = 0
             for sym in active_symbols:
-                prog = cumulative_ticks[sym] / OPTIMAL_THRESHOLDS.get(sym, 2500)
+                prog = cumulative_ticks[sym] / OPTIMAL_THRESHOLDS.get(sym, EVENT_THRESHOLD)
                 if prog > max_progress:
                     max_progress = prog
                     
@@ -426,7 +427,7 @@ async def physics_stream(websocket):
                                     
                                     shadow_trades[trade_id_counter] = {
                                         'id': trade_id_counter,
-                                        'resolution': OPTIMAL_THRESHOLDS.get(ripple_sym, 2500), # Tag with specific threshold
+                                        'resolution': OPTIMAL_THRESHOLDS.get(ripple_sym, EVENT_THRESHOLD), # Tag with specific threshold
                                         'symbol': ripple_sym,
                                         'direction': r_dir,
                                         'entry_price': ripple_curr_p,
@@ -438,7 +439,7 @@ async def physics_stream(websocket):
                                 
                                 events_payload.append({
                                     'symbol': sym,
-                                    'resolution': OPTIMAL_THRESHOLDS.get(sym, 2500),
+                                    'resolution': OPTIMAL_THRESHOLDS.get(sym, EVENT_THRESHOLD),
                                     'direction': direction,
                                     'sigma': float(sigma_dev),
                                     'risk': float(risk_pct),
@@ -506,6 +507,7 @@ async def main():
             TERMINAL_PATH = cfg.get('TERMINAL_PATH', None)
             BROKER_NAME = cfg.get('BROKER_NAME', BROKER_NAME)
             DRY_RUN = cfg.get('DRY_RUN', DRY_RUN)
+            EVENT_THRESHOLD = cfg.get('EVENT_THRESHOLD', EVENT_THRESHOLD)
             if 'DASHBOARD_PORT' in cfg:
                 HTTP_PORT = cfg['DASHBOARD_PORT']
                 WS_PORT = HTTP_PORT + 1000
@@ -527,12 +529,18 @@ async def main():
     VALID_ROOTS = ['EUR', 'USD', 'GBP', 'JPY', 'AUD', 'NZD', 'CAD', 'CHF', 'SGD', 'ZAR', 'NOK', 'SEK', 'DKK', 'MXN', 'PLN', 'HUF', 'CZK', 'HKD', 'XAU', 'XAG', 'XPT', 'XPD']
     valid_pairs = tuple(r1 + r2 for r1 in VALID_ROOTS for r2 in VALID_ROOTS if r1 != r2)
     
+    candidate_symbols = []
     all_symbols = mt5.symbols_get()
     if all_symbols:
         for sym in all_symbols:
             if sym.visible and sym.trade_mode == mt5.SYMBOL_TRADE_MODE_FULL:
                 if sym.name.upper().startswith(valid_pairs):
-                    active_symbols.append(sym.name)
+                    candidate_symbols.append(sym.name)
+                    
+    for sym in candidate_symbols:
+        tick = mt5.symbol_info_tick(sym)
+        if tick:
+            active_symbols.append(sym)
                     
     print(f"[+] Hooked {len(active_symbols)} dimensions with Independent Physics Clocks.")
         
