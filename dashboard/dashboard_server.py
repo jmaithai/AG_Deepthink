@@ -133,7 +133,28 @@ async def physics_stream(websocket):
                     p = (tick.bid + tick.ask) / 2.0
                     current_prices[sym].append(p)
                     cumulative_ticks[sym] += 1
+                    
+                    last = last_msc[sym]
                     last_msc[sym] = tick.time_msc
+                    
+                    # WEEKEND CIRCUIT BREAKER
+                    if last > 0 and (tick.time_msc - last) > 12 * 3600 * 1000:
+                        print(f"[!] WEEKEND CIRCUIT BREAKER TRIPPED by {sym}! Delta: {(tick.time_msc - last)/(3600*1000):.2f} hours")
+                        print("[!] Flushing Matrix and Refetching Historical Anchor states...")
+                        
+                        # Rebuild Memory Matrix
+                        for i_idx, i_sym in enumerate(active_symbols):
+                            rates = mt5.copy_rates_from_pos(i_sym, mt5.TIMEFRAME_M1, 0, dynamic_window)
+                            if rates is not None and len(rates) == dynamic_window:
+                                prices_matrix[:, i_idx] = rates['close']
+                        df_temp = pd.DataFrame(prices_matrix)
+                        df_temp.ffill(inplace=True)
+                        df_temp.bfill(inplace=True)
+                        prices_matrix = df_temp.values
+                        
+                        cumulative_ticks = {s: 0 for s in active_symbols}
+                        current_prices = {s: collections.deque(maxlen=100) for s in active_symbols}
+                        last_msc = {s: tick.time_msc for s in active_symbols}
                     
                     threshold = OPTIMAL_THRESHOLDS.get(sym, 2500)
                     if cumulative_ticks[sym] >= threshold:
@@ -482,7 +503,7 @@ async def main():
     if all_symbols:
         for sym in all_symbols:
             if sym.visible and sym.trade_mode == mt5.SYMBOL_TRADE_MODE_FULL:
-                if sym.trade_calc_mode == anchor_mode:
+                if sym.trade_calc_mode == anchor_mode or "XAU" in sym.name or "XAG" in sym.name:
                     active_symbols.append(sym.name)
                     
     print(f"[+] Hooked {len(active_symbols)} dimensions with Independent Physics Clocks.")
