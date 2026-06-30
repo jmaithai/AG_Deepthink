@@ -202,18 +202,17 @@ def run_farm_daemon():
         print(f"[-] MT5 Init Failed for {BROKER_NAME}. Path: {TERMINAL_PATH}")
         return
 
+    candidate_symbols = []
+    
+    VALID_ROOTS = ['EUR', 'USD', 'GBP', 'JPY', 'AUD', 'NZD', 'CAD', 'CHF', 'SGD', 'ZAR', 'NOK', 'SEK', 'DKK', 'MXN', 'PLN', 'HUF', 'CZK', 'HKD', 'XAU', 'XAG', 'XPT', 'XPD']
+    valid_pairs = tuple(r1 + r2 for r1 in VALID_ROOTS for r2 in VALID_ROOTS if r1 != r2)
+    
     all_symbols = mt5.symbols_get()
     if all_symbols is None: return
-        
-    candidate_symbols = []
-    anchor_info = mt5.symbol_info("EURUSD")
-    anchor_mode = anchor_info.trade_calc_mode if anchor_info else 0
-    
     for sym in all_symbols:
         if sym.visible and sym.trade_mode == mt5.SYMBOL_TRADE_MODE_FULL:
-            # Strictly filter by Temporal Alignment to the anchor (guarantees 24/5 continuous physics)
-            # HARD EXCEPTION: Gold (XAU) and Silver (XAG) which Blackbull categorizes as CFDs
-            if sym.trade_calc_mode == anchor_mode or "XAU" in sym.name or "XAG" in sym.name:
+            # UNIVERSAL LINGUISTIC DISCOVERY ENGINE
+            if sym.name.upper().startswith(valid_pairs):
                 candidate_symbols.append(sym.name)
     symbols = []
     
