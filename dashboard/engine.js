@@ -169,6 +169,15 @@ function updateUI(data) {
         });
     }
 
+    // Ledger Type Update
+    if (data.is_live !== undefined) {
+        const ledgerTypeEl = document.getElementById('ledger-type');
+        if (ledgerTypeEl) {
+            ledgerTypeEl.innerText = data.is_live ? 'LIVE' : 'SHADOW';
+            ledgerTypeEl.className = data.is_live ? 'text-teal' : '';
+        }
+    }
+
     // Shadow Ledger Update
     if (data.shadow_balance !== undefined) {
         document.getElementById('shadow-balance').innerText = `$${data.shadow_balance.toFixed(2)}`;

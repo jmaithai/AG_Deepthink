@@ -23,6 +23,7 @@ HTTP_PORT = 8080
 WS_PORT = 9080
 TERMINAL_PATH = None
 BROKER_NAME = "DEFAULT"
+DRY_RUN = True
 
 # The 38-Dimensional Optimal Kinetic Tensor
 TENSOR_FILE = "optimal_tensor.json"
@@ -444,13 +445,35 @@ async def physics_stream(websocket):
                                     'timestamp': datetime.now().strftime('%H:%M:%S')
                                 })
                                 
+                    acc_balance = shadow_balance
+                    active_t = list(shadow_trades.values())
+                    
+                    if not DRY_RUN:
+                        acc = mt5.account_info()
+                        if acc:
+                            acc_balance = acc.balance
+                        
+                        live_t = []
+                        positions = mt5.positions_get()
+                        if positions:
+                            for pos in positions:
+                                live_t.append({
+                                    'symbol': pos.symbol,
+                                    'direction': 'LONG' if pos.type == mt5.ORDER_TYPE_BUY else 'SHORT',
+                                    'entry_price': pos.price_open,
+                                    'barycenter': pos.price_open, 
+                                    'risk_amount': pos.profit 
+                                })
+                        active_t = live_t
+
                     payload = {
                         'type': 'physics_update',
+                        'is_live': not DRY_RUN,
                         'nodes': nodes_payload,
                         'events': events_payload,
                         'edges': edges_payload,
-                        'shadow_balance': float(shadow_balance),
-                        'active_shadows': list(shadow_trades.values()),
+                        'shadow_balance': float(acc_balance),
+                        'active_shadows': active_t,
                         'closed_shadows': closed_shadow_trades[-10:]
                     }
                     await websocket.send(json.dumps(payload))
@@ -478,6 +501,7 @@ async def main():
             cfg = json.load(f)
             TERMINAL_PATH = cfg.get('TERMINAL_PATH', None)
             BROKER_NAME = cfg.get('BROKER_NAME', BROKER_NAME)
+            DRY_RUN = cfg.get('DRY_RUN', DRY_RUN)
             if 'DASHBOARD_PORT' in cfg:
                 HTTP_PORT = cfg['DASHBOARD_PORT']
                 WS_PORT = HTTP_PORT + 1000
