@@ -176,6 +176,24 @@ h2 {
     display: flex;
     flex-direction: column;
     gap: 0.8rem;
+    max-height: 240px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Custom Scrollbar for minimal lists */
+.minimal-list::-webkit-scrollbar {
+    width: 4px;
+}
+.minimal-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+.minimal-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+.minimal-list::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-teal-soft);
 }
 
 .list-item {
