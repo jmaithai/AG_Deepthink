@@ -7,11 +7,37 @@ import warnings
 from datetime import datetime
 import argparse
 import json
+import collections
+import threading
 from scipy.stats import gaussian_kde
 from scipy.signal import find_peaks
 
 warnings.filterwarnings('ignore')
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
+# The 38-Dimensional Optimal Kinetic Tensor
+TENSOR_FILE = "optimal_tensor.json"
+OPTIMAL_THRESHOLDS = {}
+last_tensor_mtime = 0
+
+def load_tensor():
+    global OPTIMAL_THRESHOLDS, last_tensor_mtime
+    if os.path.exists(TENSOR_FILE):
+        try:
+            mtime = os.path.getmtime(TENSOR_FILE)
+            if mtime > last_tensor_mtime:
+                with open(TENSOR_FILE, 'r') as f:
+                    new_tensor = json.load(f)
+                    OPTIMAL_THRESHOLDS.update(new_tensor)
+                last_tensor_mtime = mtime
+                print(f"[*] Hot-reloaded Continuous Physics Tensor from {TENSOR_FILE}")
+        except Exception as e:
+            pass
+
+def watch_tensor():
+    while True:
+        load_tensor()
+        time.sleep(5)
 
 # ---------------------------------------------------------
 # AION DOCTRINE CONFIGURATION: LIVE SINGULARITY SENTINEL
@@ -120,7 +146,7 @@ def execute_singularity(symbol, direction, risk_pct, stop_dist, ripple_target):
     ts = datetime.now().strftime('%H:%M:%S')
     print(f"\n[+] {action} | T=0: {ts} | Target: [{symbol}] -> {direction} | Mass: {mass}/{MAX_FARM_MASS}")
     print(f"    THE SHIELD: Dynamic Risk: {risk_pct:.2f}% | Topographical Stop: {stop_dist:.5f} distance")
-    print(f"    THE RIPPLE: Shockwave designated for [{ripple_target}]")
+    print(f"    THE RIPPLE: Executing Shockwave initiated by [{ripple_target}]")
     if not DRY_RUN and action == "PRIMARY RUPTURE ENTRY":
         account_info = mt5.account_info()
         symbol_info = mt5.symbol_info(symbol)
@@ -223,6 +249,9 @@ def run_farm_daemon():
             
     print(f"[+] Living Manifold established at {len(symbols)} Dimensions.")
     
+    t_tensor = threading.Thread(target=watch_tensor, daemon=True)
+    t_tensor.start()
+    
     dynamic_window = 50 # Rolling window length for live KDE evaluation
     
     # Pre-allocate 2D Numpy Matrix
@@ -240,12 +269,11 @@ def run_farm_daemon():
     df_temp.bfill(inplace=True)
     prices_matrix = df_temp.values
     
-    cumulative_volume = 0
-    
-    current_prices = {sym: [] for sym in symbols}
+    current_prices = {sym: collections.deque(maxlen=100) for sym in symbols}
+    cumulative_ticks = {sym: 0 for sym in symbols}
     last_tick_time = {sym: 0 for sym in symbols}
 
-    print(f"[*] Sentinel Online. Awaiting dynamic volume injection (Threshold: {EVENT_THRESHOLD})...")
+    print(f"[*] Sentinel Online. Awaiting independent dynamic volume injection...")
 
     try:
         while True:
@@ -285,11 +313,14 @@ def run_farm_daemon():
                         time.sleep(10) # Pause daemon for 10s after lockdown
                         continue
                         
+            triggered_sym = None
+            
             for sym in symbols:
                 tick = mt5.symbol_info_tick(sym)
                 if tick and tick.time_msc > last_tick_time[sym]:
                     p = (tick.bid + tick.ask) / 2.0
                     current_prices[sym].append(p)
+                    cumulative_ticks[sym] += 1
                     
                     last = last_tick_time[sym]
                     last_tick_time[sym] = tick.time_msc
@@ -309,13 +340,17 @@ def run_farm_daemon():
                         df_temp.bfill(inplace=True)
                         prices_matrix = df_temp.values
                         
-                        cumulative_volume = 0
-                        current_prices = {s: [] for s in symbols}
+                        cumulative_ticks = {s: 0 for s in symbols}
+                        current_prices = {s: collections.deque(maxlen=100) for s in symbols}
                         last_tick_time = {s: tick.time_msc for s in symbols}
                     
-                    cumulative_volume += tick.volume
+                    threshold = OPTIMAL_THRESHOLDS.get(sym, 2500)
+                    if cumulative_ticks[sym] >= threshold:
+                        triggered_sym = sym
             
-            if cumulative_volume >= EVENT_THRESHOLD:
+            if triggered_sym:
+                cumulative_ticks[triggered_sym] = 0
+                
                 new_state = np.zeros(len(symbols))
                 for idx, sym in enumerate(symbols):
                     if current_prices[sym]:
@@ -327,10 +362,7 @@ def run_farm_daemon():
                 prices_matrix = np.roll(prices_matrix, -1, axis=0)
                 prices_matrix[-1, :] = new_state
                 
-                print("[~] Event State Captured. Mapping Topology...")
-                
-                cumulative_volume = 0
-                current_prices = {sym: [] for sym in symbols}
+                print(f"[~] Event State Captured via {triggered_sym}. Mapping Topology...")
                 
                 if True:
                     prices = prices_matrix.astype(float)
@@ -434,12 +466,48 @@ def run_farm_daemon():
                             risk_pct = min(5.0, max(1.0, 1.0 + (sigma_dev - 3.0) * 2.0))
                             
                             # THE RIPPLE: Secondary Correlation
-                            corr_row = adj[trap_idx]
+                            corr_row = adj[trap_idx].copy()
                             corr_row[trap_idx] = -1 
                             secondary_idx = np.argmax(corr_row)
-                            secondary_sym = symbols[secondary_idx]
+                            ripple_sym = symbols[secondary_idx]
                             
-                            execute_singularity(trap_sym, direction, risk_pct, stop_dist, secondary_sym)
+                            ripple_tick = mt5.symbol_info_tick(ripple_sym)
+                            vacuum_dist = 0.0
+                            friction = 0.0
+                            if ripple_tick:
+                                ripple_spread = ripple_tick.ask - ripple_tick.bid
+                                friction = ripple_spread * 1.5
+                                
+                                ripple_hist_p = prices[:, secondary_idx]
+                                ripple_curr_p = prices[-1, secondary_idx]
+                                ripple_barycenter = np.mean(ripple_hist_p)
+                                vacuum_dist = abs(ripple_curr_p - ripple_barycenter)
+                                
+                                if vacuum_dist <= friction:
+                                    print(f"[-] RUPTURE ABORTED [{ripple_sym}]: Ripple Potential Energy ({vacuum_dist:.5f}) <= Friction ({friction:.5f})")
+                                    continue
+                                    
+                                ripple_p_max = np.max(ripple_hist_p)
+                                ripple_p_min = np.min(ripple_hist_p)
+                                ripple_p_range = ripple_p_max - ripple_p_min
+                                if ripple_p_range == 0:
+                                    ripple_p_range = ripple_curr_p * 0.001
+                                    
+                                corr_weight = corr_row[secondary_idx]
+                                r_dir = "LONG" if (push_up and corr_weight > 0) or (not push_up and corr_weight < 0) else "SHORT"
+                                
+                                if r_dir == "LONG":
+                                    r_stop = ripple_p_min - (ripple_p_range * 0.2)
+                                    if ripple_curr_p - r_stop < friction * 2:
+                                        r_stop = ripple_curr_p - friction * 2
+                                    stop_dist_abs = abs(ripple_curr_p - r_stop)
+                                else:
+                                    r_stop = ripple_p_max + (ripple_p_range * 0.2)
+                                    if r_stop - ripple_curr_p < friction * 2:
+                                        r_stop = ripple_curr_p + friction * 2
+                                    stop_dist_abs = abs(r_stop - ripple_curr_p)
+                                
+                                execute_singularity(ripple_sym, r_dir, risk_pct, stop_dist_abs, trap_sym)
                 
                 pass
             
