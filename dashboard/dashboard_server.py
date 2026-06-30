@@ -84,11 +84,15 @@ def save_ledger():
         print(f"[!] Error saving ledger: {e}")
 
 def serve_http():
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    Handler = http.server.SimpleHTTPRequestHandler
+    dashboard_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    class CustomHandler(http.server.SimpleHTTPRequestHandler):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, directory=dashboard_dir, **kwargs)
+            
     socketserver.TCPServer.allow_reuse_address = True
     try:
-        with socketserver.TCPServer(("", HTTP_PORT), Handler) as httpd:
+        with socketserver.TCPServer(("", HTTP_PORT), CustomHandler) as httpd:
             print(f"[*] Dashboard UI available at: http://localhost:{HTTP_PORT}")
             httpd.serve_forever()
     except Exception as e:
@@ -490,7 +494,7 @@ async def physics_stream(websocket):
             await asyncio.sleep(1)
 
 async def main():
-    global TERMINAL_PATH, BROKER_NAME, active_symbols, HTTP_PORT, WS_PORT
+    global TERMINAL_PATH, BROKER_NAME, active_symbols, HTTP_PORT, WS_PORT, DRY_RUN
     
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str)
