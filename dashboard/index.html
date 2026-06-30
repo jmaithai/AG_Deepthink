@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AION Command Center [V2]</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>AION Command Center [V3]</title>
+    <link rel="stylesheet" href="style.css?v=3">
     
     <!-- External Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -15,50 +14,48 @@
 <body>
     <div id="particles-js"></div>
     
-    <div class="dashboard-container">
+    <div class="hud-wrapper">
         <!-- Header -->
-        <header class="glass-panel">
-            <div class="logo-area">
-                <h1>AION <span class="accent-cyan">COMMAND CENTER</span></h1>
-                <p class="subtitle">THERMODYNAMIC OBSERVATORY [PHASE 4]</p>
+        <header class="hud-header">
+            <div>
+                <h1>AION <span class="text-teal">PRIME</span></h1>
+                <p class="subtitle">THERMODYNAMIC OBSERVATORY [V3 HUD]</p>
             </div>
-            <div class="status-area">
-                <div class="status-indicator">
-                    <span class="pulse-dot"></span>
-                    <span id="ws-status">TELEMETRY LINK SECURE</span>
-                </div>
+            <div class="status-indicator">
+                <span class="pulse-dot"></span>
+                <span id="ws-status" class="text-teal">TELEMETRY LINK SECURE</span>
             </div>
         </header>
 
         <!-- Main Content Grid -->
-        <main class="grid-layout-v2">
+        <main class="hud-grid">
             
             <!-- Left Sidebar -->
-            <aside class="sidebar-left">
-                <section class="glass-panel">
-                    <h2>DYNAMIC CLOCK</h2>
-                    <div class="metric-box">
-                        <p class="metric-label">VOLUME INJECTION</p>
-                        <div class="progress-bar-container">
+            <aside class="glass-panel dynamic-col">
+                <section>
+                    <h2><span class="text-violet">#</span> DYNAMIC CLOCK</h2>
+                    <div class="metric-group">
+                        <p class="text-dim font-display" style="font-size: 0.8rem">VOLUME INJECTION (PROPER TIME)</p>
+                        <div class="progress-container">
                             <div class="progress-bar" id="volume-progress" style="width: 0%;"></div>
                         </div>
-                        <p class="metric-value" id="volume-text">Awaiting Ticks...</p>
+                        <p class="metric-value text-teal" id="volume-text">Awaiting Ticks...</p>
                     </div>
                 </section>
                 
-                <section class="glass-panel" style="margin-top: 1rem;">
-                    <h2>TENSION TRACKER</h2>
-                    <div id="top-nodes-list" class="node-list">
-                        <p class="empty-text">Calibrating Manifold (50-States)...</p>
+                <section style="display:flex; flex-direction:column; min-height:0; flex-grow:1;">
+                    <h2><span class="text-crimson">#</span> TENSION TRACKER</h2>
+                    <div id="top-nodes-list" class="scroll-area">
+                        <div class="empty-state">Calibrating Manifold...</div>
                     </div>
                 </section>
             </aside>
             
             <!-- Center Network Visualization -->
-            <section class="glass-panel main-vis-panel">
-                <div class="panel-header">
-                    <h2>N-DIMENSIONAL RIPPLE GRAPH</h2>
-                    <p class="subtitle">LAPLACIAN ADJACENCY MATRIX</p>
+            <section class="glass-panel center-stage">
+                <div class="panel-header-flex">
+                    <h2><span class="text-teal">#</span> N-DIMENSIONAL RIPPLE GRAPH</h2>
+                    <span class="badge">LAPLACIAN TOPOLOGY</span>
                 </div>
                 <div id="network-container" class="network-container">
                     <!-- Vis Network renders here -->
@@ -66,39 +63,37 @@
             </section>
             
             <!-- Right Sidebar -->
-            <aside class="sidebar-right">
+            <aside class="glass-panel dynamic-col">
                 <!-- KDE Chart -->
-                <section class="glass-panel">
-                    <h2>KDE TOPOLOGY</h2>
-                    <p class="subtitle" id="kde-subtitle">SELECT A NODE</p>
+                <section>
+                    <div class="panel-header-flex">
+                        <h2><span class="text-teal">#</span> KDE TOPOLOGY</h2>
+                        <span class="badge" id="kde-subtitle">SELECT NODE</span>
+                    </div>
                     <div class="chart-container">
                         <canvas id="kdeChart"></canvas>
                     </div>
                 </section>
                 
                 <!-- Singularity Log -->
-                <section class="glass-panel" style="margin-top: 1rem;">
-                    <div class="panel-header">
-                        <h2>SINGULARITY LOG</h2>
-                        <span class="badge accent-red" id="event-count">0</span>
+                <section style="display:flex; flex-direction:column; min-height:0; flex-grow:1;">
+                    <div class="panel-header-flex">
+                        <h2><span class="text-crimson">#</span> SINGULARITY LOG</h2>
+                        <span class="badge" style="color:var(--brand-crimson); border: 1px solid var(--brand-crimson);" id="event-count">0</span>
                     </div>
-                    <div id="event-feed" class="event-feed-small">
-                        <div class="empty-state" id="empty-feed">
-                            <p>DORMANT.</p>
-                        </div>
+                    <div id="event-feed" class="scroll-area" style="flex-grow:0; max-height:200px; margin-bottom:1rem;">
+                        <div class="empty-state" id="empty-feed">DORMANT.</div>
                     </div>
-                </section>
-                
-                <!-- Shadow Ledger -->
-                <section class="glass-panel" style="margin-top: 1rem;">
-                    <div class="panel-header">
-                        <h2>SHADOW LEDGER</h2>
-                        <span class="badge accent-cyan" id="shadow-balance">$200.00</span>
+
+                    <!-- Shadow Ledger -->
+                    <div class="panel-header-flex">
+                        <h2><span class="text-teal">#</span> SHADOW LEDGER</h2>
+                        <span class="badge" style="color:var(--brand-teal); border: 1px solid var(--brand-teal);" id="shadow-balance">$200.00</span>
                     </div>
-                    <div id="shadow-active" class="shadow-list">
-                        <p class="empty-text" id="empty-active-shadow">NO ACTIVE TRADES</p>
+                    <div id="shadow-active" class="scroll-area" style="flex-grow:0; max-height: 120px; margin-bottom:1rem;">
+                        <div class="empty-state" id="empty-active-shadow">NO ACTIVE TRADES</div>
                     </div>
-                    <div id="shadow-history" class="shadow-history">
+                    <div id="shadow-history" class="scroll-area" style="flex-grow:1;">
                     </div>
                 </section>
             </aside>
@@ -107,6 +102,6 @@
     </div>
 
     <!-- Engine logic -->
-    <script src="engine.js"></script>
+    <script src="engine.js?v=3"></script>
 </body>
 </html>

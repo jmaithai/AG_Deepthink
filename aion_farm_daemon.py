@@ -54,8 +54,18 @@ def liquidate_farm(symbol, reason):
             if pos and len(pos) > 0:
                 pos = pos[0]
                 tick = mt5.symbol_info_tick(symbol)
+                symbol_info = mt5.symbol_info(symbol)
                 order_type = mt5.ORDER_TYPE_SELL if pos.type == mt5.ORDER_TYPE_BUY else mt5.ORDER_TYPE_BUY
                 price = tick.bid if order_type == mt5.ORDER_TYPE_SELL else tick.ask
+                price = round(price, symbol_info.digits)
+                
+                filling_type = mt5.ORDER_FILLING_IOC
+                if symbol_info.filling_mode & mt5.SYMBOL_FILLING_FOK:
+                    filling_type = mt5.ORDER_FILLING_FOK
+                elif symbol_info.filling_mode & mt5.SYMBOL_FILLING_IOC:
+                    filling_type = mt5.ORDER_FILLING_IOC
+                elif symbol_info.filling_mode & mt5.SYMBOL_FILLING_RETURN:
+                    filling_type = mt5.ORDER_FILLING_RETURN
                 
                 request = {
                     "action": mt5.TRADE_ACTION_DEAL,
@@ -68,7 +78,7 @@ def liquidate_farm(symbol, reason):
                     "magic": 100100,
                     "comment": reason[:20],
                     "type_time": mt5.ORDER_TIME_GTC,
-                    "type_filling": mt5.ORDER_FILLING_IOC,
+                    "type_filling": filling_type,
                 }
                 result = mt5.order_send(request)
                 if result.retcode != mt5.TRADE_RETCODE_DONE:
@@ -116,14 +126,14 @@ def execute_singularity(symbol, direction, risk_pct, stop_dist, ripple_target):
             risk_amount = balance * (risk_pct / 100.0)
             
             tick = mt5.symbol_info_tick(symbol)
-            curr_p = tick.ask if 'LONG' in direction else tick.bid
             
-            sl_dist_abs = stop_dist
+            min_stop = symbol_info.trade_tick_size * 10.0
+            sl_dist_abs = max(stop_dist, min_stop)
             
-            if sl_dist_abs > 0:
-                notional = risk_amount / (sl_dist_abs / curr_p)
-                contract_size = symbol_info.trade_contract_size
-                raw_lot = notional / contract_size
+            if sl_dist_abs > 0 and symbol_info.trade_tick_value > 0 and symbol_info.trade_tick_size > 0:
+                sl_points = sl_dist_abs / symbol_info.trade_tick_size
+                loss_per_lot = sl_points * symbol_info.trade_tick_value
+                raw_lot = risk_amount / loss_per_lot
                 
                 step = symbol_info.volume_step
                 lot = round(raw_lot / step) * step
@@ -131,8 +141,18 @@ def execute_singularity(symbol, direction, risk_pct, stop_dist, ripple_target):
                 
                 order_type = mt5.ORDER_TYPE_BUY if 'LONG' in direction else mt5.ORDER_TYPE_SELL
                 price = tick.ask if order_type == mt5.ORDER_TYPE_BUY else tick.bid
+                price = round(price, symbol_info.digits)
                 
                 sl = price - sl_dist_abs if order_type == mt5.ORDER_TYPE_BUY else price + sl_dist_abs
+                sl = round(sl, symbol_info.digits)
+                
+                filling_type = mt5.ORDER_FILLING_IOC
+                if symbol_info.filling_mode & mt5.SYMBOL_FILLING_FOK:
+                    filling_type = mt5.ORDER_FILLING_FOK
+                elif symbol_info.filling_mode & mt5.SYMBOL_FILLING_IOC:
+                    filling_type = mt5.ORDER_FILLING_IOC
+                elif symbol_info.filling_mode & mt5.SYMBOL_FILLING_RETURN:
+                    filling_type = mt5.ORDER_FILLING_RETURN
                 
                 request = {
                     "action": mt5.TRADE_ACTION_DEAL,
@@ -145,7 +165,7 @@ def execute_singularity(symbol, direction, risk_pct, stop_dist, ripple_target):
                     "magic": 100100,
                     "comment": "AION_PRIME",
                     "type_time": mt5.ORDER_TIME_GTC,
-                    "type_filling": mt5.ORDER_FILLING_IOC,
+                    "type_filling": filling_type,
                 }
                 
                 res = mt5.order_send(request)
@@ -192,6 +212,7 @@ def run_farm_daemon():
     current_state_idx = 0
     
     current_prices = {sym: [] for sym in symbols}
+    last_tick_time = {sym: 0 for sym in symbols}
 
     print(f"[*] Sentinel Online. Awaiting dynamic volume injection (Threshold: {EVENT_THRESHOLD})...")
 
@@ -199,7 +220,8 @@ def run_farm_daemon():
         while True:
             for sym in symbols:
                 tick = mt5.symbol_info_tick(sym)
-                if tick:
+                if tick and tick.time_msc != last_tick_time[sym]:
+                    last_tick_time[sym] = tick.time_msc
                     current_prices[sym].append((tick.bid + tick.ask) / 2.0)
                     cumulative_volume += tick.volume
             
