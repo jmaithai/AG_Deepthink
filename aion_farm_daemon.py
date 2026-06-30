@@ -22,6 +22,8 @@ DRY_RUN = True
 MAX_FARM_MASS = 50  
 TERMINAL_PATH = None
 BROKER_NAME = "DEFAULT"
+MAX_DRAWDOWN = 15.0
+MAX_CONCURRENT_TRADES = 5
 
 active_farms = {} 
 
@@ -38,9 +40,11 @@ def load_config():
             EVENT_THRESHOLD = cfg.get('EVENT_THRESHOLD', EVENT_THRESHOLD)
             DRY_RUN = cfg.get('DRY_RUN', DRY_RUN)
             MAX_FARM_MASS = cfg.get('MAX_FARM_MASS', MAX_FARM_MASS)
+            MAX_DRAWDOWN = cfg.get('MAX_DRAWDOWN', MAX_DRAWDOWN)
+            MAX_CONCURRENT_TRADES = cfg.get('MAX_CONCURRENT_TRADES', MAX_CONCURRENT_TRADES)
             TERMINAL_PATH = cfg.get('TERMINAL_PATH', None)
             BROKER_NAME = cfg.get('BROKER_NAME', BROKER_NAME)
-            print(f"[*] Loaded Config for: {BROKER_NAME}") 
+            print(f"[*] Loaded Config for: {BROKER_NAME} | Drawdown Limit: {MAX_DRAWDOWN}% | Max Trades: {MAX_CONCURRENT_TRADES}") 
 
 def liquidate_farm(symbol, reason):
     """Liquidates position when tension resolves or physics invert."""
@@ -121,7 +125,18 @@ def execute_singularity(symbol, direction, risk_pct, stop_dist, ripple_target):
         account_info = mt5.account_info()
         symbol_info = mt5.symbol_info(symbol)
         
+        
         if account_info and symbol_info:
+            # MARGIN SAFETY CHECKS
+            total_positions = mt5.positions_total()
+            if total_positions >= MAX_CONCURRENT_TRADES:
+                print(f"[-] RUPTURE ABORTED: Max concurrent trades ({MAX_CONCURRENT_TRADES}) reached.")
+                return
+                
+            if account_info.margin_level < 150.0 and account_info.margin_level != 0.0:
+                print(f"[-] RUPTURE ABORTED: Margin Level too low ({account_info.margin_level}%).")
+                return
+                
             balance = account_info.margin_free
             risk_amount = balance * (risk_pct / 100.0)
             
@@ -218,6 +233,42 @@ def run_farm_daemon():
 
     try:
         while True:
+            if not DRY_RUN:
+                acc = mt5.account_info()
+                if acc:
+                    dd_pct = ((acc.balance - acc.equity) / acc.balance) * 100.0 if acc.balance > 0 else 0
+                    if dd_pct > MAX_DRAWDOWN:
+                        print(f"\n[!!!] CRITICAL: EQUITY DRAWDOWN OF {dd_pct:.2f}% EXCEEDS LIMIT OF {MAX_DRAWDOWN}% [!!!]")
+                        print("[!!!] INITIATING EMERGENCY LIQUIDATION OF ALL ASSETS [!!!]")
+                        for sym in list(active_farms.keys()):
+                            liquidate_farm(sym, "EMERGENCY MAX DRAWDOWN CROSSED")
+                        
+                        # Liquidate any other lingering MT5 positions not in active_farms
+                        positions = mt5.positions_get()
+                        if positions:
+                            for pos in positions:
+                                print(f"[-] Orphaned Position Found: {pos.symbol}. Liquidating...")
+                                tick = mt5.symbol_info_tick(pos.symbol)
+                                s_info = mt5.symbol_info(pos.symbol)
+                                o_type = mt5.ORDER_TYPE_SELL if pos.type == mt5.ORDER_TYPE_BUY else mt5.ORDER_TYPE_BUY
+                                p = tick.bid if o_type == mt5.ORDER_TYPE_SELL else tick.ask
+                                req = {
+                                    "action": mt5.TRADE_ACTION_DEAL,
+                                    "symbol": pos.symbol,
+                                    "volume": pos.volume,
+                                    "type": o_type,
+                                    "position": pos.ticket,
+                                    "price": round(p, s_info.digits),
+                                    "deviation": 20,
+                                    "magic": 100100,
+                                    "comment": "EMERGENCY DRAWDOWN CROSSED",
+                                    "type_time": mt5.ORDER_TIME_GTC,
+                                    "type_filling": mt5.ORDER_FILLING_IOC,
+                                }
+                                mt5.order_send(req)
+                        time.sleep(10) # Pause daemon for 10s after lockdown
+                        continue
+                        
             for sym in symbols:
                 tick = mt5.symbol_info_tick(sym)
                 if tick and tick.time_msc != last_tick_time[sym]:
