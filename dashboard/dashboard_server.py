@@ -386,7 +386,7 @@ async def physics_stream(websocket):
                                     spread = tick.ask - tick.bid
                                     friction = spread * 1.5
                                     vacuum_dist = abs(curr_p - np.mean(hist_p))
-                                    if vacuum_dist <= friction:
+                                    if vacuum_dist <= friction * 2:
                                         continue
                                 
                                 try:
@@ -427,7 +427,7 @@ async def physics_stream(websocket):
                                     ripple_barycenter = np.mean(ripple_hist_p)
                                     vacuum_dist = abs(ripple_curr_p - ripple_barycenter)
                                     
-                                    if vacuum_dist <= friction:
+                                    if vacuum_dist <= friction * 2:
                                         continue
                                         
                                     # Prevent duplicate exposure on the same symbol
