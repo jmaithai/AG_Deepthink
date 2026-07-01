@@ -453,11 +453,11 @@ async def physics_stream(websocket):
                                     r_dir = "LONG" if (push_up and corr_weight > 0) or (not push_up and corr_weight < 0) else "SHORT"
                                     
                                     if r_dir == "LONG":
-                                        r_stop = ripple_p_min - (ripple_p_range * 0.2)
+                                        r_stop = ripple_p_min - (ripple_p_range * 0.1)
                                         if ripple_curr_p - r_stop < friction * 2:
                                             r_stop = ripple_curr_p - friction * 2
                                     else:
-                                        r_stop = ripple_p_max + (ripple_p_range * 0.2)
+                                        r_stop = ripple_p_max + (ripple_p_range * 0.1)
                                         if r_stop - ripple_curr_p < friction * 2:
                                             r_stop = ripple_curr_p + friction * 2
                                     
