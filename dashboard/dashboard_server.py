@@ -408,7 +408,7 @@ async def physics_stream(websocket):
                                     stop_dist = ((wall_price + p_range * 0.2) - curr_p)
                                 stop_dist = max(stop_dist, 0.001)
                                 
-                                risk_pct = min(5.0, max(1.0, 1.0 + (sigma_dev - 3.0) * 2.0))
+                                risk_pct = min(3.0, max(1.0, 1.0 + (sigma_dev - 3.0) * 2.0))
                                 
                                 corr_row = adj[idx].copy()
                                 corr_row[idx] = -1 
